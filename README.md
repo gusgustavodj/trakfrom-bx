@@ -8,6 +8,13 @@ TRAKFROM-BX is an independent, pre-alpha read-only bridge from supported
 rekordbox USB libraries to playlists and NML catalogs consumed by Traktor.
 Version: `0.1.0.dev0`. Windows is the official maintainer platform.
 Audio stays on the original USB; the local managed virtual disk holds catalogs.
+**USB hotplug for live DJ workflows:** supported drives already connected when
+TRAKFROM-BX starts are detected automatically; drives connected during a session
+are detected too, without restarting TRAKFROM-BX.
+
+**Read-only USB:** TRAKFROM-BX reads the supported library and leaves the USB's
+music, database and playlists untouched. Generated catalogs and managed disk
+files are written locally on the computer; audio remains on the original USB.
 
 ## Instructions
 
@@ -62,6 +69,23 @@ The user loads a track
         v
 Traktor reads the audio from the original USB
 ```
+
+### USB hotplug and startup detection
+
+- **USB connected before TRAKFROM-BX starts:** leave it connected. The initial
+  scan detects supported sources; unplugging and reconnecting is unnecessary.
+- **USB hotplug while TRAKFROM-BX is running:** connect a supported drive at any
+  time. The watcher detects it and publishes its catalog without restarting
+  TRAKFROM-BX. Multiple USB sources are managed independently.
+- **Hotplug with Traktor already open:** a new source with no existing managed
+  VHDX can be published during the Traktor session. Existing active publications
+  can be recognized without rewriting them. Reusing or rebuilding an existing
+  managed VHDX may require closing Traktor first; unknown host state blocks
+  publication for safety.
+
+This helps live DJ workflows by avoiding a TRAKFROM-BX restart to detect a new
+USB. Keep the original USB connected during playback and stop playback before
+removing it.
 
 ### What happens at each step
 
