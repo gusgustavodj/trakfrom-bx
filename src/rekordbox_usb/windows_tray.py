@@ -8,6 +8,31 @@ from __future__ import annotations
 from pathlib import Path
 import threading
 import uuid
+from . import __version__
+
+
+PROJECT_NOTICE = (
+    "TRAKFROM-BX is open-source software licensed under the MIT License.\n"
+    "Source code: github.com/gusgustavodj/trakfrom-bx\n\n"
+    "TRAKFROM-BX is an independent project and is not affiliated with,\n"
+    "sponsored by, approved by, or endorsed by Native Instruments,\n"
+    "AlphaTheta, Pioneer DJ, or rekordbox."
+)
+
+DISPLAY_STATES = {
+    "Preparando": "Preparing TRAKFROM-BX...",
+    "Preparando volumes": "Preparing volumes...",
+    "Aguardando autorização do Windows": "Waiting for Windows authorization...",
+    "Pronto; pode abrir o Traktor": "Ready; you can open Traktor",
+    "Abrindo Traktor": "Opening Traktor...",
+    "Ativo": "Active",
+    "Encerrando": "Shutting down...",
+    "Encerramento solicitado; feche o Traktor": "Shutdown requested; close Traktor",
+    "Encerrando volumes": "Closing volumes...",
+    "Em espera; pode abrir o Traktor novamente": "Standing by; you can open Traktor again",
+    "Aguardando confirmação do estado do Traktor": "Waiting for Traktor status confirmation...",
+    "Desmontando volumes": "Unmounting volumes...",
+}
 
 
 class TrayUnavailableError(RuntimeError):
@@ -73,7 +98,17 @@ class WindowsTray:
     def text(self):
         with self._lock:
             host = f" · Traktor Pro {self.version}" if self.version else ""
-            return f"TRAKFROM-BX{host} · {self._state}"
+            return f"TRAKFROM-BX{host} · {DISPLAY_STATES.get(self._state, self._state)}"
+
+    def startup_text(self):
+        with self._lock:
+            status = DISPLAY_STATES.get(self._state, "Preparing TRAKFROM-BX...")
+        return ("TRAKFROM-BX is starting\n\n" + status + "\n\n"
+                "Open Traktor when this window becomes a tray icon.\n\n" + PROJECT_NOTICE)
+
+    def about_text(self):
+        return (f"TRAKFROM-BX\nVersion {__version__}\n\n" + PROJECT_NOTICE +
+                "\n\nTraktor and rekordbox are trademarks of their respective owners.")
 
     def close(self):
         self._closing.set()
@@ -109,6 +144,7 @@ class _NativeTray:
         self.c, self.w, self.owner = c, w, owner
         self.window, self.icon, self.added, self.registered = None, None, False, False
         self.label = None
+        self.about_window = None
         self.class_name = "TRAKFROM_BX_TRAY_" + uuid.uuid4().hex
         self.user = c.WinDLL("user32", use_last_error=True)
         self.shell = c.WinDLL("shell32", use_last_error=True)
@@ -185,9 +221,10 @@ class _NativeTray:
             area = w.RECT()
             if not self.user.SystemParametersInfoW(48, 0, c.byref(area), 0):
                 raise c.WinError(c.get_last_error())
-            width, height = 490, 190
+            width, height = 660, 360
             left = area.left + (area.right - area.left - width) // 2
             top = area.top + (area.bottom - area.top - height) // 2
+            self.position = (left, top)
             # A nonmodal startup notice; no tray icon until storage reports READY.
             style = 0x80C80000 if owner._startup else 0  # Popup, caption and close button.
             self.window = self.user.CreateWindowExW(0, self.class_name, "TRAKFROM-BX", style,
@@ -200,15 +237,16 @@ class _NativeTray:
             else:
                 self.icon = self.user.LoadIconW(None, c.c_void_p(32512))
             self.data.hWnd, self.data.hIcon = self.window, self.icon
+            gdi = c.WinDLL("gdi32", use_last_error=True)
+            gdi.GetStockObject.argtypes, gdi.GetStockObject.restype = (c.c_int,), w.HANDLE
+            self.font = gdi.GetStockObject(17)
             if owner._startup:
                 self.label = self.user.CreateWindowExW(0, "STATIC", "", 0x50000001,
-                                                       20, 20, 440, 120, self.window, None,
+                                                       20, 20, 620, 290, self.window, None,
                                                        self.instance, None)
                 if not self.label:
                     raise c.WinError(c.get_last_error())
-                gdi = c.WinDLL("gdi32", use_last_error=True)
-                gdi.GetStockObject.argtypes, gdi.GetStockObject.restype = (c.c_int,), w.HANDLE
-                self.user.SendMessageW(self.label, 0x30, gdi.GetStockObject(17), 1)
+                self.user.SendMessageW(self.label, 0x30, self.font, 1)
                 self._refresh_notice()
                 self.user.ShowWindow(self.window, 1)
                 self.user.SetForegroundWindow(self.window)
@@ -228,13 +266,40 @@ class _NativeTray:
 
     def _refresh_notice(self):
         if self.label:
-            self.user.SetWindowTextW(self.label, "Inicializando o TRAKFROM-BX\n\n" +
-                                     self.owner.text() + "\n\n"
-                                     "Abra o Traktor quando este aviso virar ícone na bandeja.")
+            self.user.SetWindowTextW(self.label, self.owner.startup_text())
+
+    def _show_about(self):
+        # A modeless window shares the tray message pump; no waiting dialog.
+        if not self.about_window:
+            left, top = self.position
+            self.about_window = self.user.CreateWindowExW(
+                0, self.class_name, "About TRAKFROM-BX", 0x80C80000,
+                left, top, 660, 360, None, None, self.instance, None)
+            if not self.about_window:
+                return False
+            label = self.user.CreateWindowExW(
+                0, "STATIC", self.owner.about_text(), 0x50000001,
+                20, 20, 620, 290, self.about_window, None, self.instance, None)
+            if not label:
+                self.user.DestroyWindow(self.about_window)
+                self.about_window = None
+                return False
+            self.user.SendMessageW(label, 0x30, self.font, 1)
+        self.user.ShowWindow(self.about_window, 1)
+        self.user.SetForegroundWindow(self.about_window)
+        return True
 
     def _message(self, window, message, wparam, lparam):
         # Exceptions must never cross the Win32 callback boundary.
         try:
+            if window == self.about_window:
+                if message == 0x10:
+                    self.user.DestroyWindow(window)
+                    return 0
+                if message == 2:
+                    self.about_window = None
+                    return 0
+                return self.user.DefWindowProcW(window, message, wparam, lparam)
             if message == self.UPDATE:
                 if self.added:
                     self._notify(1)
@@ -280,6 +345,7 @@ class _NativeTray:
             except Exception:
                 self.user.AppendMenuW(menu, 1, 0, "Preferências indisponíveis")
             self.user.AppendMenuW(menu, 0x800, 0, None)
+            self.user.AppendMenuW(menu, 0, 4, "About TRAKFROM-BX")
             if self.owner._service_ui:
                 self.user.AppendMenuW(menu, 1, 0, "Abra o Traktor pelo atalho dele quando estiver pronto.")
                 self.user.AppendMenuW(menu, 0, 1, "Encerrar TRAKFROM-BX")
@@ -293,6 +359,8 @@ class _NativeTray:
             self.user.PostMessageW(window, 0, 0, 0)
             if selected == 1:
                 self.owner._stop.set()
+            elif selected == 4:
+                self._show_about()
             elif selected in (2, 3):
                 try:
                     self.owner.select_preference(selected)
@@ -326,6 +394,9 @@ class _NativeTray:
             self.user.DispatchMessageW(self.c.byref(message))
 
     def close(self):
+        if self.about_window:
+            self.user.DestroyWindow(self.about_window)
+            self.about_window = None
         if self.added:
             self.shell.Shell_NotifyIconW(2, self.c.byref(self.data))  # NIM_DELETE
             self.added = False

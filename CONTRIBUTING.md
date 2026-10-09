@@ -20,6 +20,40 @@ pass. A destructive operation proposal needs explicit justification and tests
 showing its authorization boundary. Windows regressions must be considered.
 Run the commands in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
+## Official project and forks
+
+The official TRAKFROM-BX repository is maintained at
+https://github.com/gusgustavodj/trakfrom-bx.
+Forks and derivative works are permitted under the MIT License. You may copy,
+modify, distribute and sublicense the software subject to [LICENSE](LICENSE),
+including preservation of its copyright and permission notice.
+Modified versions must not represent themselves as official TRAKFROM-BX releases
+or imply endorsement by the maintainer; this is an official-identity distinction,
+not an additional MIT license restriction.
+Changes intended for inclusion in the official repository must be submitted
+through a Pull Request and accepted by the maintainer. Fork creation and
+MIT-permitted redistribution do not require maintainer approval.
+
+## Rekordbox library formats and proprietary material
+
+The current public implementation does not include OneLibrary / Device Library
+Plus support. Contributions adding other library formats are welcome when they
+can be implemented, tested and distributed lawfully. This is a contribution
+requirement, not a claim that a particular format cannot legally be implemented.
+
+Do not submit proprietary source code, confidential material, unauthorized
+third-party implementations, copyrighted database specifications you lack the
+right to redistribute, or other non-redistributable material.
+The official project will not accept proprietary, confidential, unauthorized or
+otherwise non-redistributable contributions, whether they target OneLibrary,
+Device Library Plus or any other format.
+
+Use original work and tests, legitimate documentation, lawfully observed
+behavior, redistributable sources and material you have the right to contribute.
+Briefly identify relevant sources and permissions; working code alone does not
+establish contribution rights. A format or feature is not supported merely
+because related abstractions, experiments or historical research exist.
+
 ## Porting to macOS
 
 macOS contributions are explicitly welcome: studies, abstractions, adapters,

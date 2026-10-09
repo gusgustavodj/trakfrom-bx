@@ -181,3 +181,68 @@ def test_native_menu_displays_checkmarks_and_persists_selected_preference(tmp_pa
     native._menu(1)
     selected = next(row for row in rows if row[0] == selection)
     assert selected[1] == (8 if selection == 2 else 0)
+
+
+@pytest.mark.parametrize("state", ["Preparando", "Preparando volumes",
+                                   "Aguardando autorização do Windows", "unknown state"])
+def test_startup_notice_is_english_operational_and_contains_project_notices(state):
+    owner = WindowsTray(Path("host.exe"), "4", startup=True)
+    owner.update(state)
+    text = owner.startup_text()
+    assert text.startswith("TRAKFROM-BX is starting")
+    assert "Open Traktor when this window becomes a tray icon." in text
+    assert "MIT License" in text and "github.com/gusgustavodj/trakfrom-bx" in text
+    assert "independent project" in text
+    assert all(name in text for name in ("Native Instruments", "AlphaTheta", "Pioneer DJ", "rekordbox"))
+    assert not any(word in text.lower() for word in (
+        "instagram", "thanks", "onelibrary", "device library plus", "fork", "preparando", "autorização"))
+    assert text.index("Open Traktor") < text.index("MIT License") < text.index("independent project")
+    assert not owner.stop_requested()
+
+
+def test_about_opens_reuses_and_closes_without_stopping_tray():
+    from rekordbox_usb import __version__
+    owner = WindowsTray(Path("host.exe"), "4", startup=True)
+    created, destroyed, quit_calls, shown = [], [], [], []
+    def create(*args):
+        created.append(args)
+        return 20 + len(created)
+    native = object.__new__(_NativeTray)
+    native.owner, native.about_window = owner, None
+    native.position, native.class_name, native.window = (0, 0), "synthetic", 1
+    native.instance, native.font, native.label, native.added = 1, 1, 5, False
+    native.user = SimpleNamespace(CreateWindowExW=create, SendMessageW=lambda *_: None,
+        ShowWindow=lambda *args: shown.append(args), SetForegroundWindow=lambda *_: None,
+        DestroyWindow=lambda window: destroyed.append(window),
+        PostQuitMessage=lambda *_: quit_calls.append(True),
+        SetWindowTextW=lambda *_: None, DefWindowProcW=lambda *_: 0)
+    assert native._show_about()
+    window = native.about_window
+    assert len(created) == 2 and created[0][2] == "About TRAKFROM-BX"
+    assert created[0][8] is None  # The tray owner is hidden after READY.
+    text = created[1][2]
+    assert __version__ in text and "MIT License" in text
+    assert "github.com/gusgustavodj/trakfrom-bx" in text and "independent project" in text
+    assert native._show_about() and len(created) == 2
+    assert native._message(1, native.UPDATE, 0, 0) == 0  # Tray still processes updates.
+    assert native._message(window, 0x10, 0, 0) == 0
+    assert destroyed == [window]
+    assert native._message(window, 2, 0, 0) == 0 and native.about_window is None
+    assert not quit_calls and not owner.stop_requested()
+
+
+def test_about_menu_selection_does_not_request_shutdown():
+    owner = WindowsTray(Path("host.exe"), None, startup=True)
+    rows, opened = [], []
+    native = object.__new__(_NativeTray)
+    native.owner = owner
+    native.user = SimpleNamespace(CreatePopupMenu=lambda: 1,
+        AppendMenuW=lambda _menu, _flags, identifier, label: rows.append((identifier, label)),
+        GetCursorPos=lambda _: True, SetForegroundWindow=lambda _: None,
+        TrackPopupMenu=lambda *_: 4, PostMessageW=lambda *_: None, DestroyMenu=lambda _: None)
+    native.c = SimpleNamespace(byref=lambda value: value)
+    native.w = SimpleNamespace(POINT=lambda: SimpleNamespace(x=0, y=0))
+    native._show_about = lambda: opened.append(True)
+    native._menu(1)
+    assert (4, "About TRAKFROM-BX") in rows and opened == [True]
+    assert not owner.stop_requested()

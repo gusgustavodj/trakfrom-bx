@@ -17,12 +17,16 @@ supported Rekordbox BPM/key metadata are projected into NML. Local VHDX volumes
 hold the managed catalog, not copied audio. No mandatory audio cache is used.
 The source USB remains read-only; `collection.nml` is never edited directly.
 
-## Supported library formats
+## Rekordbox library formats
+
+TRAKFROM-BX only claims support for library formats that are implemented and
+validated in the distributed runtime. The current public implementation does
+not include OneLibrary / Device Library Plus support.
 
 | Format | Current public runtime |
 | --- | --- |
 | Device Library / `export.pdb` | Supported bounded Legacy subset; synthetic contracts and local Windows evidence |
-| Device Library Plus / `exportLibrary.db` | Unsupported; no public provider |
+| OneLibrary / Device Library Plus / `exportLibrary.db` | NOT CURRENTLY SUPPORTED; no public provider |
 | Other formats | Unsupported |
 
 Support is limited to the reader's tested subset. Unsupported or invalid inputs
@@ -30,6 +34,11 @@ are refused. Format detection or an enum does not establish extraction support.
 No universal Rekordbox or Traktor version compatibility is claimed. Maintainer
 physical musical validation covers Traktor Pro 2, 3 and 4 on Windows, based on
 repeated playback tests confirmed by the maintainer.
+
+Additional library formats may be contributed when they can be implemented,
+tested and distributed appropriately. This technical support status is not a
+legal conclusion about implementing a particular format. See CONTRIBUTING.md
+for the policy on proprietary and non-redistributable material.
 
 ## Platform status
 
@@ -117,7 +126,7 @@ publication/storage commands still require their normal Windows safety checks.
   unplugging during playback safe. Stop playback before removing the source.
 - macOS and Linux have no supported end-to-end runtime. The public Windows
   runtime refuses unsupported platforms; portable unit tests are not a port.
-- Device Library Plus and universal host compatibility are not delivered by
+- OneLibrary / Device Library Plus and universal host compatibility are not delivered by
   this version. The installer is unsigned; Windows 10 and fresh-machine physical
   validation remain pending. Run on startup may require recurring UAC.
 
@@ -133,6 +142,23 @@ Build/test commands are in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 Contributions are particularly welcome for macOS, platform adapters, additional
 safe library formats, packaging, tests, diagnostics, documentation and reproducible
 hardware validation. These are opportunities, not delivery promises.
+
+## Official project and forks
+
+The official TRAKFROM-BX repository is maintained at
+https://github.com/gusgustavodj/trakfrom-bx.
+
+Forks and derivative works are permitted under the MIT License, including
+copying, modification, distribution and sublicensing, subject to its terms.
+Preserve the copyright and permission notice as required by [LICENSE](LICENSE).
+Modified versions must not represent themselves as official TRAKFROM-BX releases
+or imply endorsement by the maintainer. This distinguishes official identity;
+it does not add a restriction to the MIT License.
+
+Changes intended for inclusion in the official repository must be submitted
+through a Pull Request and accepted by the maintainer. Maintainer approval is
+required for inclusion in the official project, not for creating or distributing
+a fork under MIT.
 
 ## License and independence
 
