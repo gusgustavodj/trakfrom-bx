@@ -1,0 +1,7 @@
+TRAKFROM-BX includes the application, a private application runtime and required Windows support components. No separate Python installation or Internet connection is needed to install or run this package.
+
+Windows 10/11 x64 is the intended target. Windows 11 is the current local test platform; Windows 10 has not been physically validated. Traktor is installed separately and is not included.
+
+Choose your installation folder and shortcuts on the following pages. Your local catalogs and preferences are stored separately from the program and are preserved when updating or uninstalling.
+
+Starting the storage worker requires explicit Windows administrator approval (UAC), including when starting at Windows login. This installer does not create an elevated scheduled task or a Windows service.

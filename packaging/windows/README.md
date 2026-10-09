@@ -1,0 +1,37 @@
+# Windows Setup build
+
+The product uses the official CPython Embedded 3.13.16 AMD64 distribution and
+Inno Setup 7.1.0. The application has no third-party runtime Python packages.
+Build tools and test dependencies are never installed with the product.
+
+1. Verify the positive `PUBLIC_FILES.txt` inventory and run the public suite.
+2. Build wheel/sdist from that curated public source, with `SOURCE_DATE_EPOCH`
+   fixed and the pinned build tools in `pyproject.toml`. Audit archive membership.
+3. Obtain the official Python embedded archive and applicable licenses separately.
+   `build_installer.py` checks the fixed archive SHA-256 and exact runtime members.
+4. Run `build_installer.py --candidate <source> --wheel <wheel> --python-zip <zip>
+   --licenses <license-directory> --stage <new-staging> --compiler <ISCC.exe>
+   --output <dist> --assemble-only` with absolute paths.
+5. Test that staging using its private Python, with `-I -B`, before compiling.
+   Keep pytest and synthetic fixtures in a separate test copy. Compare all app
+   bytes against staging; never ship test tools or add them to production `_pth`.
+6. Call `compile_setup` with the staging manifest, or use the same tool without
+   `--assemble-only` for an already validated set of source/runtime inputs.
+   Compilation consumes an exact generated file list, with no recursive wildcard.
+7. Validate the resulting Setup, then publish hashes and the local checkpoint.
+
+Default installation is administrative in Program Files. Custom local folders
+are supported. Desktop, Start Menu and per-user logon are independent tasks.
+The application and storage worker preserve their existing UAC separation.
+There is no elevated scheduled task or persistent Windows service.
+
+DiskPart command files use a separate privileged known-folder location:
+ProgramData/TRAKFROM-BX/secure-runtime. Owner, protected DACL, physical identity
+and reparse checks are mandatory. Open ancestor and read-only script handles
+protect the entire child lifetime. An untrusted pre-existing directory is
+rejected; it is never repaired or used as a fallback.
+
+Native uninstall preserves user catalogs, VHDXs and preferences. Upgrade keeps
+the installation identity and rejects downgrade, foreign paths and collisions.
+Close the application before maintenance. A previous PowerShell installation
+must be removed using its own uninstaller before switching to this Setup.

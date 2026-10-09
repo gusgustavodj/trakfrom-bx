@@ -1,0 +1,89 @@
+{
+  "name": "Windows CI",
+  "on": {
+    "push": {
+      "branches": [
+        "main"
+      ]
+    },
+    "pull_request": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "env": {
+    "SOURCE_DATE_EPOCH": "1791504000",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "jobs": {
+    "windows-public": {
+      "name": "Windows public / Python ${{ matrix.python }}",
+      "runs-on": "windows-latest",
+      "timeout-minutes": 20,
+      "strategy": {
+        "fail-fast": false,
+        "matrix": {
+          "python": [
+            "3.11",
+            "3.13"
+          ]
+        }
+      },
+      "defaults": {
+        "run": {
+          "shell": "pwsh"
+        }
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@v7",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "actions/setup-python@v7",
+          "with": {
+            "python-version": "${{ matrix.python }}"
+          }
+        },
+        {
+          "name": "Install build and test tools",
+          "run": "python -m pip install build==1.6.1 setuptools==83.0.0 wheel==0.47.0 pytest==9.1.1"
+        },
+        {
+          "name": "Positive public inventory, private dependencies and secrets",
+          "run": "python scripts/check_public_tree.py"
+        },
+        {
+          "name": "Clean package installation",
+          "run": "python -m pip install --no-deps ."
+        },
+        {
+          "name": "Installed imports",
+          "run": "python scripts/smoke_imports.py --installed"
+        },
+        {
+          "name": "Full public source suite",
+          "run": "python scripts/run_public_tests.py"
+        },
+        {
+          "name": "Build wheel and sdist",
+          "run": "python -m build --no-isolation"
+        },
+        {
+          "name": "Audit package contents, license and README",
+          "run": "python scripts/check_artifacts.py dist"
+        },
+        {
+          "name": "Install wheel in a clean environment",
+          "run": "python -m venv .wheel-venv\n$wheel = (Get-ChildItem -LiteralPath dist -Filter *.whl).FullName\n& ./.wheel-venv/Scripts/python.exe -m pip install --no-index --no-deps $wheel\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\n& ./.wheel-venv/Scripts/python.exe scripts/smoke_imports.py --installed\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\n& ./.wheel-venv/Scripts/trakfrom-bx.exe --help\nexit $LASTEXITCODE"
+        },
+        {
+          "name": "Run full suite against installed wheel",
+          "run": "$wheel = (Get-ChildItem -LiteralPath dist -Filter *.whl).FullName\npython -m pip install --no-index --no-deps --force-reinstall $wheel\nif ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }\npython scripts/run_public_tests.py --installed\nexit $LASTEXITCODE"
+        }
+      ]
+    }
+  }
+}

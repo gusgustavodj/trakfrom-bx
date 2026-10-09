@@ -1,0 +1,89 @@
+{
+  "name": "Bug report",
+  "description": "Report a reproducible, non-sensitive failure.",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "For sensitive vulnerabilities read SECURITY.md. Never upload real libraries/audio, credentials or personal logs."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "environment",
+      "attributes": {
+        "label": "Environment",
+        "description": "OS/version, architecture, TRAKFROM-BX version, Traktor version and Python version if applicable."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "format",
+      "attributes": {
+        "label": "Source format",
+        "description": "Device Library/export.pdb, Device Library Plus/exportLibrary.db or other."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "steps",
+      "attributes": {
+        "label": "Reproduction",
+        "description": "Minimal reproducible steps using synthetic data where possible."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "expected",
+      "attributes": {
+        "label": "Expected behavior",
+        "description": "What should happen?"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "actual",
+      "attributes": {
+        "label": "Actual behavior",
+        "description": "What happened?"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "playback",
+      "attributes": {
+        "label": "Playback and USB removal",
+        "description": "Was audio playing? Was the USB inserted or removed? State the order of events."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "logs",
+      "attributes": {
+        "label": "Sanitized logs",
+        "description": "Remove names, paths, IDs, secrets and real library contents."
+      },
+      "validations": {
+        "required": false
+      }
+    }
+  ]
+}

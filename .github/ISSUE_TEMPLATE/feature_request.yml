@@ -1,0 +1,39 @@
+{
+  "name": "Feature request",
+  "description": "Propose a focused improvement.",
+  "body": [
+    {
+      "type": "textarea",
+      "id": "problem",
+      "attributes": {
+        "label": "Problem",
+        "description": "Describe the concrete need."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "proposal",
+      "attributes": {
+        "label": "Proposal",
+        "description": "Suggested behavior, scope, platform and alternatives."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "safety",
+      "attributes": {
+        "label": "Safety and validation",
+        "description": "Read-only USB, ownership impact, contracts and a proposed test plan."
+      },
+      "validations": {
+        "required": true
+      }
+    }
+  ]
+}

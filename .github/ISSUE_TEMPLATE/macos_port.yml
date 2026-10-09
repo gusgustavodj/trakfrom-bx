@@ -1,0 +1,78 @@
+{
+  "name": "macOS port / platform contribution",
+  "description": "Community ports and platform proposals are welcome.",
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "Contributor evidence does not imply maintainer physical validation. Never include real library/audio data or proprietary binaries."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "platform",
+      "attributes": {
+        "label": "Platform",
+        "description": "OS version, Intel/Apple Silicon or other architecture, Python and Traktor versions."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "scope",
+      "attributes": {
+        "label": "Adapter scope",
+        "description": "Discovery, native publication, lifecycle/mount, permissions, watcher, launcher or shared-core changes."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "hardware",
+      "attributes": {
+        "label": "Physical setup",
+        "description": "Hardware/USB and library format tested, or NOT_RUN."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "steps",
+      "attributes": {
+        "label": "Reproducible steps and results",
+        "description": "List automated tests and results separately from physical tests, expected and actual outcomes."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "safety",
+      "attributes": {
+        "label": "Safety",
+        "description": "How source read-only, ownership and Windows regression behavior are preserved."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "limits",
+      "attributes": {
+        "label": "Limitations and evidence",
+        "description": "Validation label, known gaps and sanitized logs; avoid universal support claims."
+      },
+      "validations": {
+        "required": true
+      }
+    }
+  ]
+}
