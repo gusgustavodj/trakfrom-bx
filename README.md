@@ -28,8 +28,8 @@ The source USB remains read-only; `collection.nml` is never edited directly.
 Support is limited to the reader's tested subset. Unsupported or invalid inputs
 are refused. Format detection or an enum does not establish extraction support.
 No universal Rekordbox or Traktor version compatibility is claimed. Maintainer
-physical musical validation covers Traktor Pro 4 on Windows; recognizing processes
-for Traktor 2/3 is not physical playback validation for those versions.
+physical musical validation covers Traktor Pro 2, 3 and 4 on Windows, based on
+repeated playback tests confirmed by the maintainer.
 
 ## Platform status
 

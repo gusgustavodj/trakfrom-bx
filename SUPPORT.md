@@ -1,7 +1,8 @@
 # Support
 
 This pre-alpha has bounded compatibility. Windows is
-`OFFICIAL_MAINTAINER_VALIDATED`; physical musical evidence covers Traktor Pro 4.
+`OFFICIAL_MAINTAINER_VALIDATED`; the maintainer confirms repeated physical
+playback tests with Traktor Pro 2, 3 and 4 on Windows.
 macOS is `EXPERIMENTAL` with community ports welcome; Linux is `NOT_SUPPORTED`
 and not currently targeted. A future `COMMUNITY_VALIDATED` platform records
 contributor evidence, separately from maintainer physical validation.
