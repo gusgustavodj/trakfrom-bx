@@ -65,3 +65,9 @@ replace program files, uninstall and install again, or uninstall only. Update
 uses the normal Inno upgrade log without uninstalling first. The other choices
 run only this installation's registered uninstaller and wait for it. Cancelled
 or partial uninstall blocks replacement. Uninstall only closes Setup afterward.
+
+Version 1.0 / build 2026101003 includes author, repository and distribution date
+in the displayed MIT license. Exact orphaned native/legacy startup commands
+can be migrated after read-only preflight. Unknown or active commands remain
+protected; the value is checked again before deletion. The desktop frontend
+remains asInvoker; current-user startup configuration requires no elevation.

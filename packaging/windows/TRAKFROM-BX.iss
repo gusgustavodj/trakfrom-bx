@@ -9,15 +9,17 @@
   #error PayloadInclude is required
 #endif
 #define ProductId "{574E3A6C-90F3-489F-A34F-C1D1A3E8609F}"
-#define ProductVersion "0.1.0.dev0"
-#define BuildNumber 2026101002
+#define ProductVersion "1.0"
+#define BuildNumber 2026101003
 
 [Setup]
 AppId={{574E3A6C-90F3-489F-A34F-C1D1A3E8609F}
 AppName=TRAKFROM-BX
 AppVersion={#ProductVersion}
-AppPublisher=TRAKFROM-BX contributors
-VersionInfoVersion=0.1.0.0
+AppPublisher=Gustavo Freitas dos Santos
+AppPublisherURL=https://github.com/gusgustavodj/trakfrom-bx
+AppSupportURL=https://github.com/gusgustavodj/trakfrom-bx/issues
+VersionInfoVersion=1.0.0.0
 DefaultDirName={commonpf64}\TRAKFROM-BX
 DefaultGroupName=TRAKFROM-BX
 DisableProgramGroupPage=yes
@@ -90,6 +92,7 @@ var
   MaintenancePage: TInputOptionWizardPage;
   MaintenancePath: String;
   MaintenanceCompleted: Boolean;
+  OrphanedStartup: String;
 
 function GetFileAttributesW(Name: String): Cardinal;
   external 'GetFileAttributesW@kernel32.dll stdcall';
@@ -283,6 +286,44 @@ begin
   Result := '-I -B -m rekordbox_usb.public_launcher service';
 end;
 
+function IsOrphanedStartup(Value: String): Boolean;
+var Suffix, Executable, Path, LegacyExecutable, Data, LegacyCommand: String; Offset: Integer;
+begin
+  Result := False;
+  Suffix := '" -I -B -m rekordbox_usb.public_launcher service';
+  Offset := Pos(Suffix, Value);
+  if (Length(Value) > 1) and (Value[1] = '"') and (Offset > 2) and
+     (Copy(Value, Offset, Length(Value)) = Suffix) then begin
+    Executable := Copy(Value, 2, Offset - 2);
+    if (CompareText(ExtractFileName(Executable), 'pythonw.exe') <> 0) or
+       (CompareText(ExtractFileName(ExtractFileDir(Executable)), 'runtime') <> 0) then exit;
+    Path := ExtractFileDir(ExtractFileDir(Executable));
+  end else begin
+    Path := ExpandConstant('{localappdata}\TRAKFROM-BX');
+    LegacyExecutable := AddBackslash(Path) + 'venv\Scripts\pythonw.exe';
+    Data := ExpandConstant('{localappdata}\RekordboxUSB');
+    if Pos(' ', LegacyExecutable) <> 0 then LegacyExecutable := '"' + LegacyExecutable + '"';
+    if Pos(' ', Data) <> 0 then Data := '"' + Data + '"';
+    LegacyCommand := LegacyExecutable + ' -I -m rekordbox_usb.public_launcher service --data-root ' + Data;
+    if Value <> LegacyCommand then exit;
+  end;
+  // Only the exact product command and a missing/empty local program folder qualify.
+  if (Length(Path) <= 3) or (Path[2] <> ':') or (Path[3] <> '\') or
+     not SafeAncestors(Path) or FileExists(Path) then exit;
+  Result := not DirExists(Path) or DirectoryEmpty(Path);
+end;
+
+procedure RemoveValidatedOrphanStartup;
+var Value: String;
+begin
+  if OrphanedStartup = '' then exit;
+  if RegQueryStringValue(HKCU, RunKey, 'TRAKFROM-BX', Value) then begin
+    if Value <> OrphanedStartup then RaiseException('Startup registration changed during installation; no startup value was removed.');
+    if not RegDeleteValue(HKCU, RunKey, 'TRAKFROM-BX') then RaiseException('Could not remove the identified orphaned startup registration.');
+  end;
+  OrphanedStartup := '';
+end;
+
 function SafeLink(Path, Target, Arguments: String): Boolean;
 var Shell, Link: Variant;
 begin
@@ -350,7 +391,8 @@ begin
     SavedId := GetIniString('installation', 'installation_id', '', Marker);
   end;
   if RegQueryStringValue(HKCU, RunKey, 'TRAKFROM-BX', Value) and (Value <> StartupCommand) then begin
-    Result := 'The TRAKFROM-BX startup name belongs to another installation. Nothing was changed.'; exit;
+    if IsOrphanedStartup(Value) then OrphanedStartup := Value
+    else begin Result := 'The TRAKFROM-BX startup name belongs to another installation. Nothing was changed.'; exit; end;
   end;
 end;
 
@@ -371,6 +413,7 @@ procedure CurStepChanged(CurStep: TSetupStep);
 var Code: Integer; Choice: String;
 begin
   if CurStep = ssPostInstall then begin
+    RemoveValidatedOrphanStartup;
     if not WizardIsTaskSelected('desktop') then
       if FileExists(ExpandConstant('{autodesktop}\TRAKFROM-BX.lnk')) then
         if not DeleteFile(ExpandConstant('{autodesktop}\TRAKFROM-BX.lnk')) then RaiseException('Could not remove owned Desktop shortcut.');
@@ -401,7 +444,8 @@ end;
 procedure RemoveOwnedStartup(Root: Integer; Key: String);
 var Value: String;
 begin
-  if RegQueryStringValue(Root, Key, 'TRAKFROM-BX', Value) and (Value = StartupCommand) then
+  if RegQueryStringValue(Root, Key, 'TRAKFROM-BX', Value) and
+     ((Value = StartupCommand) or IsOrphanedStartup(Value)) then
     if not RegDeleteValue(Root, Key, 'TRAKFROM-BX') then RaiseException('Could not remove startup registration.');
 end;
 
