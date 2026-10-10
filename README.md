@@ -37,9 +37,6 @@ Screenshots supplied by the maintainer on 2026-10-10, showing the Windows and Tr
 
 ![TRAKFROM-BX startup window awaiting Windows authorization](https://github.com/user-attachments/assets/cd6c703b-7d3c-40b8-8b5e-20f9b7860a5a)
 
-### Tray icon
-
-![TRAKFROM-BX running in the Windows system tray](https://github.com/user-attachments/assets/7f39fdbc-f984-4d2c-8b0a-c74f75886f92)
 
 ### Virtual catalog and original USB
 
