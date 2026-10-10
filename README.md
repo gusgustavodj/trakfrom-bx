@@ -15,7 +15,7 @@ installation is required.
 [Installer in the repository](./TRAKFROM-BX-Setup.exe)
 | [Preview release notes](https://github.com/gusgustavodj/trakfrom-bx/releases/tag/v0.1.0-preview.1)
 
-This unsigned preview Setup was built on 2026-10-10 (build 2026101002).
+This unsigned preview Setup was built on 2026-10-10 (build 2026101003).
 It includes the current startup/tray UI and supports starting TRAKFROM-BX
 while Traktor is already running. Keep the USB connected during playback.
 
@@ -25,7 +25,7 @@ application and **Uninstall-TRAKFROM-BX.exe** to open the registered uninstaller
 Run the new Setup to update an installation made with the previous preview.
 
 Installer SHA-256:
-`17b71b7b1ca6f48c2d734f78d01947f4dfee2568d994323604e5d4f120324e14`
+`f856fd688d4831d78dec528d761575c8e1e815af6010bb8fc60e4704f82bfdee`
 
 ---
 
@@ -33,7 +33,7 @@ Installer SHA-256:
 
 TRAKFROM-BX is an independent, pre-alpha read-only bridge from supported
 rekordbox USB libraries to playlists and NML catalogs consumed by Traktor.
-Version: `0.1.0.dev0`. Windows is the official maintainer platform.
+Version: `1.0`. Windows is the official maintainer platform.
 Audio stays on the original USB; the local managed virtual disk holds catalogs.
 **USB hotplug for live DJ workflows:** supported drives already connected when
 TRAKFROM-BX starts are detected automatically; drives connected during a session
@@ -77,6 +77,14 @@ When Setup recognizes an existing native installation, choose:
 
 Cancelled or incomplete uninstall blocks replacement. Close TRAKFROM-BX before maintenance.
 Preferences, generated catalogs, USB and Traktor are preserved.
+
+### Startup registration and permissions
+
+This build migrates an identified orphaned startup command when its old program
+folder is absent or empty. An active other installation or unknown command remains
+blocked. The desktop launcher runs as the normal user. Run on startup is a current-user
+setting and does not require administrator rights; mounting managed virtual disks
+still requires approval for the separate storage worker.
 
 ### Reinstalling after uninstall
 

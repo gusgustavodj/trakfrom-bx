@@ -1,6 +1,6 @@
 [project]
 name = "trakfrom-bx"
-version = "0.1.0.dev0"
+version = "1.0"
 description = "Read-only bridge for projecting supported Rekordbox USB libraries into a Traktor-compatible workflow."
 readme = "README.md"
 requires-python = ">=3.11"
