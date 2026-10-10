@@ -35,7 +35,7 @@ Screenshots supplied by the maintainer on 2026-10-10, showing the Windows and Tr
 
 ### Starting TRAKFROM-BX
 
-![TRAKFROM-BX startup window awaiting Windows authorization](https://github.com/user-attachments/assets/296de639-a069-4176-8bce-c7c63ece920b)
+![TRAKFROM-BX startup window awaiting Windows authorization](https://github.com/user-attachments/assets/cd6c703b-7d3c-40b8-8b5e-20f9b7860a5a)
 
 ### Tray icon
 
@@ -47,7 +47,7 @@ Screenshots supplied by the maintainer on 2026-10-10, showing the Windows and Tr
 
 ### Playlists in Traktor
 
-![Traktor browser showing the generated Rekordbox USB playlists](https://github.com/user-attachments/assets/3aa2e6ec-4f92-47a6-9a3b-c59d41adc38e)
+![Traktor browser showing the generated Rekordbox USB playlists](https://github.com/user-attachments/assets/12394aaf-3c82-48a7-9d90-cef9a2b23154)
 
 ### Track loaded in Traktor
 
