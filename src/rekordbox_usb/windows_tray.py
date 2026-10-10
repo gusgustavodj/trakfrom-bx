@@ -203,11 +203,12 @@ class _NativeTray:
         self.user.GetSysColorBrush.argtypes, self.user.GetSysColorBrush.restype = (c.c_int,), w.HBRUSH
         self.user.SendMessageW.argtypes = (w.HWND, w.UINT, w.WPARAM, w.LPARAM)
         self.user.SendMessageW.restype = c.c_ssize_t
+        self.user.GetDC.argtypes, self.user.GetDC.restype = (w.HWND,), w.HDC
+        self.user.ReleaseDC.argtypes = (w.HWND, w.HDC)
+        self.user.DrawTextW.argtypes = (w.HDC, w.LPCWSTR, c.c_int, c.POINTER(w.RECT), w.UINT)
+        self.user.AdjustWindowRectEx.argtypes = (c.POINTER(w.RECT), w.DWORD, w.BOOL, w.DWORD)
         self.shell.Shell_NotifyIconW.argtypes = (w.DWORD, c.POINTER(NotifyIcon))
         self.shell.Shell_NotifyIconW.restype = w.BOOL
-        self.shell.ExtractIconExW.argtypes = (w.LPCWSTR, c.c_int, c.POINTER(w.HICON),
-                                            c.POINTER(w.HICON), w.UINT)
-        self.shell.ExtractIconExW.restype = w.UINT
         self.taskbar_created = self.user.RegisterWindowMessageW("TaskbarCreated")
         self.procedure = procedure(self._message)  # Keep the callback alive through cleanup.
         window_class = WindowClass(lpfnWndProc=self.procedure, hInstance=self.instance,
@@ -222,28 +223,49 @@ class _NativeTray:
             area = w.RECT()
             if not self.user.SystemParametersInfoW(48, 0, c.byref(area), 0):
                 raise c.WinError(c.get_last_error())
+            gdi = c.WinDLL("gdi32", use_last_error=True)
+            gdi.GetStockObject.argtypes, gdi.GetStockObject.restype = (c.c_int,), w.HANDLE
+            gdi.SelectObject.argtypes, gdi.SelectObject.restype = (w.HDC, w.HANDLE), w.HANDLE
+            self.font = gdi.GetStockObject(17)
+            # Measure the unchanged notice with the same font and wrapping as STATIC.
+            style = 0x80C80000 if owner._startup else 0
             width, height = 660, 360
+            if owner._startup:
+                padding = 14
+                notice_width = min(480, area.right - area.left - 2 * padding - 32)
+                bounds = w.RECT(0, 0, notice_width, 0)
+                dc = self.user.GetDC(None)
+                if not dc:
+                    raise c.WinError(c.get_last_error())
+                previous_font = gdi.SelectObject(dc, self.font)
+                try:
+                    # DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX.
+                    if not self.user.DrawTextW(dc, owner.startup_text(), -1, c.byref(bounds), 0xC11):
+                        raise c.WinError(c.get_last_error())
+                finally:
+                    gdi.SelectObject(dc, previous_font)
+                    self.user.ReleaseDC(None, dc)
+                notice_height = bounds.bottom - bounds.top
+                frame = w.RECT(0, 0, notice_width + 2 * padding, notice_height + 2 * padding)
+                if not self.user.AdjustWindowRectEx(c.byref(frame), style, False, 0):
+                    raise c.WinError(c.get_last_error())
+                width, height = frame.right - frame.left, frame.bottom - frame.top
             left = area.left + (area.right - area.left - width) // 2
             top = area.top + (area.bottom - area.top - height) // 2
             self.position = (left, top)
             # A nonmodal startup notice; no tray icon until storage reports READY.
-            style = 0x80C80000 if owner._startup else 0  # Popup, caption and close button.
             self.window = self.user.CreateWindowExW(0, self.class_name, "TRAKFROM-BX", style,
                                                     left, top, width, height, None, None, self.instance, None)
             if not self.window:
                 raise c.WinError(c.get_last_error())
-            icon = w.HICON()
-            if self.shell.ExtractIconExW(str(owner.executable), 0, None, c.byref(icon), 1) == 1 and icon:
-                self.icon, self.owned_icon = icon, True
-            else:
-                self.icon = self.user.LoadIconW(None, c.c_void_p(32512))
+            # IDI_APPLICATION is a shared Windows icon, independent of the host app.
+            self.icon = self.user.LoadIconW(None, c.c_void_p(32512))
+            if not self.icon:
+                raise c.WinError(c.get_last_error())
             self.data.hWnd, self.data.hIcon = self.window, self.icon
-            gdi = c.WinDLL("gdi32", use_last_error=True)
-            gdi.GetStockObject.argtypes, gdi.GetStockObject.restype = (c.c_int,), w.HANDLE
-            self.font = gdi.GetStockObject(17)
             if owner._startup:
-                self.label = self.user.CreateWindowExW(0, "STATIC", "", 0x50000001,
-                                                       20, 20, 620, 290, self.window, None,
+                self.label = self.user.CreateWindowExW(0, "STATIC", "", 0x50000081,
+                                                       padding, padding, notice_width, notice_height, self.window, None,
                                                        self.instance, None)
                 if not self.label:
                     raise c.WinError(c.get_last_error())
