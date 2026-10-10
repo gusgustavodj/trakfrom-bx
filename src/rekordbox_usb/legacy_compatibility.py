@@ -108,10 +108,13 @@ def _validated_model(raw: Any, factory: ServiceFactory, context: Mapping[str, An
         key = item.get("rekordbox_key")
         if key is not None:
             key = _text(key)
+        artist = item.get("artist")
+        if artist is not None:
+            artist = _text(artist)
         track_fields.append({
             "track_id": ident, "title": _text(item["title"]), "source_path": path,
             "rekordbox_path": path, "file_name": path.split("/")[-1],
-            "artist": None, "album": None, "genre": None, "label": None, "bpm": bpm,
+            "artist": artist, "album": None, "genre": None, "label": None, "bpm": bpm,
             "rekordbox_key": key, "duration_seconds": None, "track_number": None,
             "rating": None, "comment": None, "file_size": None,
             "analysis": {"data_path": None, "resolved_dat_path": None, "beat_count": 0,

@@ -119,10 +119,10 @@ def _directory(header, count):
     for slot in range(20):
         at = 28 + 16 * slot
         family = _u(header, at, 4)
-        if family in (0, 5, 7, 8):
+        if family in (0, 2, 5, 7, 8):
             _require(family not in families)
             first, last = _u(header, at + 8, 4), _u(header, at + 12, 4)
-            if family == 5 and first == 0 and last == 0:
+            if family in (2, 5) and first == 0 and last == 0:
                 continue
             _require(first < count and last < count)
             families[family] = (first, last)
@@ -166,7 +166,7 @@ def _rows(pages, family, first, last):
         _require(index < pages.count)
 
 
-def _decode_track(page, start, end, keys=None):
+def _decode_track(page, start, end, keys=None, artists=None):
     _require(136 <= end - start)
     ident = _u(page, start + 72, 4, end)
     _require(ident != 0)
@@ -182,6 +182,10 @@ def _decode_track(page, start, end, keys=None):
     title = title.strip() or filename.strip()
     _require(bool(title))
     track = {"id": str(ident), "title": title, "relative_audio_path": _audio_path(path)}
+    artist_id = _u(page, start + 68, 4, end)
+    if artist_id:
+        _require(artists is not None and artist_id in artists)
+        track["artist"] = artists[artist_id]
     # Local experimental metadata profile, measured independently on the source.
     bpmx100 = _u(page, start + 56, 4, end)
     if bpmx100:
@@ -191,6 +195,17 @@ def _decode_track(page, start, end, keys=None):
         _require(keys is not None and key_id in keys)
         track["rekordbox_key"] = keys[key_id]
     return ident, track
+
+
+def _decode_artist(page, start, end):
+    # Authorial local profile measured on the maintainer's read-only source.
+    _require(10 <= end - start)
+    ident = _u(page, start + 4, 4, end)
+    relative = _u(page, start + 9, 1, end)
+    _require(ident != 0 and 10 <= relative < end - start)
+    value = _string(page, start + relative, end).strip()
+    _require(bool(value))
+    return ident, value
 
 
 def _decode_key(page, start, end):
@@ -260,6 +275,12 @@ def _parse(stream):
     pages = _Pages(stream)
     families = _directory(pages.get(0), pages.count)
     tracks, nodes, edges = {}, {}, []
+    artists = {}
+    if 2 in families:
+        for page, start, end in _rows(pages, 2, *families[2]):
+            ident, value = _decode_artist(page, start, end)
+            _require(ident not in artists)
+            artists[ident] = value
     keys = {}
     if 5 in families:
         for page, start, end in _rows(pages, 5, *families[5]):
@@ -268,7 +289,7 @@ def _parse(stream):
             keys[ident] = value
     for family, destination, decoder in ((0, tracks, _decode_track), (7, nodes, _decode_node)):
         for page, start, end in _rows(pages, family, *families[family]):
-            ident, value = decoder(page, start, end, keys) if family == 0 else decoder(page, start, end)
+            ident, value = decoder(page, start, end, keys, artists) if family == 0 else decoder(page, start, end)
             _require(ident not in destination)
             destination[ident] = value
     for page, start, end in _rows(pages, 8, *families[8]):
