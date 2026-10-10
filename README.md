@@ -15,7 +15,7 @@ installation is required.
 [Installer in the repository](./TRAKFROM-BX-Setup.exe)
 | [Preview release notes](https://github.com/gusgustavodj/trakfrom-bx/releases/tag/v0.1.0-preview.1)
 
-This unsigned preview Setup was built on 2026-10-10 (build 2026101001).
+This unsigned preview Setup was built on 2026-10-10 (build 2026101002).
 It includes the current startup/tray UI and supports starting TRAKFROM-BX
 while Traktor is already running. Keep the USB connected during playback.
 
@@ -25,7 +25,7 @@ application and **Uninstall-TRAKFROM-BX.exe** to open the registered uninstaller
 Run the new Setup to update an installation made with the previous preview.
 
 Installer SHA-256:
-`873af856ef684c3d6ddf8e0d30f00fd0bff0802bd2d397837a9283a0d28d017d`
+`17b71b7b1ca6f48c2d734f78d01947f4dfee2568d994323604e5d4f120324e14`
 
 ---
 
@@ -66,6 +66,25 @@ No separate Python installation is required. The normal path is
 The GitHub preview Release is an additional distribution channel. Older tagged
 source archives reflect their original commit and may not include the EXE;
 use the current main branch ZIP for the combined source-and-installer package.
+
+### Updating or removing an installed version
+
+When Setup recognizes an existing native installation, choose:
+
+- **Update / replace program files:** install the new files at the current path, without uninstalling first.
+- **Uninstall and install again:** complete the registered uninstall, then continue Setup.
+- **Uninstall only:** complete the registered uninstall and close Setup.
+
+Cancelled or incomplete uninstall blocks replacement. Close TRAKFROM-BX before maintenance.
+Preferences, generated catalogs, USB and Traktor are preserved.
+
+### Reinstalling after uninstall
+
+This build accepts an identified obsolete PowerShell uninstall entry when its
+program folder is absent or empty. An active old installation still requires
+its own uninstall. Setup cleans the identified obsolete entry after successful
+installation. Uninstall removes program files, owned shortcuts and installation/
+startup registrations while preserving preferences and local catalogs.
 
 ### Starting while Traktor is running
 
@@ -135,7 +154,7 @@ removing it.
 | Rekordbox library read | Keep the USB connected. | Reads the supported Legacy Device Library database (`export.pdb`) and relevant library metadata from the USB. It does not modify the source library. |
 | Catalog generation | Wait for publication. | Normalizes tracks/playlists and generates Traktor-compatible NML with supported BPM/key metadata and references to original audio paths. |
 | Managed virtual disk publication | Leave the worker running. | Creates/reuses a local VHDX and mounts it to expose generated playlists/catalogs to Traktor. NML and a catalog manifest are written to the managed volume; ownership/state records remain local. |
-| Open Traktor | Open Traktor manually after the startup window becomes a tray icon. | Continues USB monitoring and managed-volume lifecycle handling; it does not launch or configure Traktor. |
+| Open Traktor | If Traktor is not already running, open it after the startup window becomes a tray icon. | Continues USB monitoring and managed-volume lifecycle handling; it does not launch or configure Traktor. |
 | Browse playlist | Browse the managed source and select a playlist. | Makes the generated catalog available on the mounted volume. |
 | Load track | Load and play normally in Traktor. | Supplies catalog references; Traktor opens the original USB audio file directly. |
 
@@ -171,7 +190,7 @@ leave unavailable entries.
 
 ### Startup and shutdown behavior
 
-Wait for the startup window to become a tray icon before opening Traktor.
+Traktor may already be running. Otherwise, wait for the startup window to become a tray icon before opening it.
 Starting without a USB connected is allowed. The tray provides status,
 **About TRAKFROM-BX**, **Run on startup** and **Shutdown when Traktor closes**.
 The preference choices persist; shutdown when Traktor closes defaults to enabled.

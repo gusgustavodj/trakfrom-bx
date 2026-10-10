@@ -90,6 +90,7 @@ tests/contracts/test_library_projection.py
 tests/contracts/test_library_provider_registry.py
 tests/contracts/test_metadata_normalization.py
 tests/contracts/test_native_frontends.py
+tests/contracts/test_native_reinstall_guard.py
 tests/contracts/test_nml_catalog_materializer.py
 tests/contracts/test_public_auto_usb.py
 tests/contracts/test_public_bpm_key_propagation.py
