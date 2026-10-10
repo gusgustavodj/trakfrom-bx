@@ -22,7 +22,7 @@ def check(root):
         if path.is_file():
             actual.add(relative.as_posix())
     assert actual == allowed, {"extra": sorted(actual - allowed), "missing": sorted(allowed - actual)}
-    screenshot_hashes = {'screenshots/my-computer.png': '832fc5284387ccf73be3ddeb43b8e2186f80992b201d11e18a718e9ba0d6df41', 'screenshots/run-popup.png': '533159a8969950348c6cab4dc4e1f0270ce159f7c1d24c1c1d659bb627c74723', 'screenshots/traktor.png': 'dc8b56e8d06874cd7acfad19d9af6eb1ba5465e9e441221067cddbe551da363d', 'screenshots/traktor_2.png': '19b3c126390e841371bd648051623e3865fe92c53c527379c379b09a3618b51f', 'screenshots/tray.png': '530b3e2a32b78647ab2a17907ee336ad6d94ac60c4c69f2e06e94ce7dca33b3b'}
+    screenshot_hashes = {'screenshots/my-computer.png': '832fc5284387ccf73be3ddeb43b8e2186f80992b201d11e18a718e9ba0d6df41', 'screenshots/run-popup.png': '97f89fc036013ca580067c0106b842b440a8ef152d1d0fd3466603cb85d5db1f', 'screenshots/traktor.png': '4a61ce00e7b85fd31023b7201e7f73e65f1e68c674aa90850a2bf51b6fedb55a', 'screenshots/traktor_2.png': '19b3c126390e841371bd648051623e3865fe92c53c527379c379b09a3618b51f', 'screenshots/tray.png': '530b3e2a32b78647ab2a17907ee336ad6d94ac60c4c69f2e06e94ce7dca33b3b'}
     blocked_imports = {"rekordbox_usb_internal", "pyrekordbox", "sqlcipher3", "pysqlcipher3"}
     secrets = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-proj-[A-Za-z0-9_-]{20,}|AKIA[A-Z0-9]{16}")
     personal = re.compile(r"C:[\\/]Users[\\/]|/Users/", re.IGNORECASE)
