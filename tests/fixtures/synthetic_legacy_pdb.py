@@ -1,4 +1,4 @@
-"""Authorial byte builder derived only from the neutral Legacy V1 spec."""
+"""Authorial synthetic bytes for the neutral Legacy and local metadata profiles."""
 
 from __future__ import annotations
 
@@ -68,6 +68,7 @@ class SyntheticLegacyPdbBuilder:
         self._nodes: list[bytes] = []
         self._entries: list[bytes] = []
         self._keys: list[bytes] = []
+        self._artists: list[bytes] = []
 
     def add_track(
         self,
@@ -82,12 +83,14 @@ class SyntheticLegacyPdbBuilder:
         offset_overrides: dict[int, int] | None = None,
         bpmx100: int = 0,
         key_id: int = 0,
+        artist_id: int = 0,
     ) -> SyntheticLegacyPdbBuilder:
         file_name = file_name if file_name is not None else path.replace("\\", "/").split("/")[-1]
         fixed = bytearray(136)
         struct.pack_into("<I", fixed, 72, track_id)
         struct.pack_into("<I", fixed, 56, bpmx100)
         struct.pack_into("<I", fixed, 32, key_id)
+        struct.pack_into("<I", fixed, 68, artist_id)
         encoded_values = (
             (17, _encode(title, title_mode)),
             (19, _encode(file_name, file_name_mode)),
@@ -106,6 +109,15 @@ class SyntheticLegacyPdbBuilder:
         for index, offset in enumerate(offsets):
             struct.pack_into("<H", fixed, 94 + index * 2, offset)
         self._tracks.append(bytes(fixed + payload))
+        return self
+
+    def add_artist(self, artist_id: int, value: str, *, name_relative: int = 10,
+                   name_mode: str = "auto") -> SyntheticLegacyPdbBuilder:
+        row = bytearray(name_relative)
+        struct.pack_into("<I", row, 4, artist_id)
+        row[9] = name_relative
+        row.extend(_encode(value, name_mode))
+        self._artists.append(bytes(row))
         return self
 
     def add_key(self, key_id: int, value: str) -> SyntheticLegacyPdbBuilder:
@@ -164,6 +176,8 @@ class SyntheticLegacyPdbBuilder:
         }
         if self._keys:
             rows_by_family[KEY_FAMILY] = tuple(self._keys)
+        if self._artists:
+            rows_by_family[2] = tuple(self._artists)
         chunks_by_family = {
             family: self._split_rows(rows) for family, rows in rows_by_family.items()
         }
