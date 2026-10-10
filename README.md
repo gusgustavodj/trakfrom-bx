@@ -29,6 +29,30 @@ Installer SHA-256:
 
 ---
 
+## Screenshots
+
+Screenshots supplied by the maintainer on 2026-10-10, showing the Windows and Traktor workflow. Drive letters and playlist contents are examples from that session. These images are included in the repository ZIP under `screenshots/`.
+
+### Starting TRAKFROM-BX
+
+![TRAKFROM-BX startup window awaiting Windows authorization](screenshots/run-popup.png)
+
+### Tray icon
+
+![TRAKFROM-BX running in the Windows system tray](screenshots/tray.png)
+
+### Virtual catalog and original USB
+
+![Windows Explorer showing the TRAKFROM_BX virtual volume and the original USB separately](screenshots/my-computer.png)
+
+### Playlists in Traktor
+
+![Traktor browser showing the generated Rekordbox USB playlists](screenshots/traktor.png)
+
+### Track loaded in Traktor
+
+![Traktor with a playlist selected and a track loaded in deck A](screenshots/traktor_2.png)
+
 ## What is TRAKFROM-BX?
 
 TRAKFROM-BX is an independent, pre-alpha read-only bridge from supported
