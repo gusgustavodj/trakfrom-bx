@@ -174,3 +174,82 @@ def test_native_maintenance_executes_only_registered_uninstall_and_checks_comple
             winreg.DeleteKeyEx(winreg.HKEY_CURRENT_USER, key_path, winreg.KEY_WOW64_64KEY)
         except FileNotFoundError:
             pass
+
+
+@pytest.mark.parametrize('cleanup', [False, True])
+@pytest.mark.parametrize('scenario,orphan', [
+    ('missing-native', True), ('empty-native', True), ('active-native', False),
+    ('foreign-module', False), ('extra-args', False), ('root-is-file', False),
+    ('missing-legacy', True), ('active-legacy', False), ('changed-value', True),
+])
+def test_native_startup_migration_checks_command_folder_and_registry_race(tmp_path, scenario, orphan, cleanup):
+    import winreg
+    compiler = Path(os.environ.get('TRAKFROM_BX_INNO_COMPILER', str(
+        ROOT / 'outputs/MISSAO_2026-10-09_TRAKFROM_BX_WINDOWS_EXE_INSTALLER/tools/inno/ISCC.exe')))
+    if not compiler.is_file():
+        pytest.skip('Previously approved Inno compiler not available')
+    folder = tmp_path / 'Removed native folder'
+    legacy = tmp_path / 'Local user' / 'TRAKFROM-BX'
+    data = tmp_path / 'Local user' / 'RekordboxUSB'
+    if scenario in ('empty-native', 'active-native'):
+        folder.mkdir()
+        if scenario == 'active-native':
+            (folder / 'program.txt').write_text('active')
+    if scenario == 'root-is-file':
+        folder.write_text('foreign file')
+    if scenario == 'active-legacy':
+        legacy.mkdir(parents=True)
+        (legacy / 'program.txt').write_text('active')
+    command = '"' + str(folder / 'runtime/pythonw.exe') + '" -I -B -m rekordbox_usb.public_launcher service'
+    if scenario == 'foreign-module':
+        command = command.replace('rekordbox_usb.public_launcher', 'other.application')
+    if scenario == 'extra-args':
+        command += ' --unknown'
+    if scenario in ('missing-legacy', 'active-legacy'):
+        import subprocess as sp
+        command = sp.list2cmdline([str(legacy / 'venv/Scripts/pythonw.exe'), '-I', '-m',
+                                  'rekordbox_usb.public_launcher', 'service', '--data-root', str(data)])
+    key_path = 'Software\\TRAKFROM-BX-tests\\' + uuid.uuid4().hex
+    report = tmp_path / 'startup-result.txt'
+    source = (ROOT / 'packaging/windows/TRAKFROM-BX.iss').read_text(encoding='utf-8')
+    functions = '\n'.join(function_source(source, name) for name in
+                          ('SafeAncestors', 'DirectoryEmpty', 'IsOrphanedStartup', 'RemoveValidatedOrphanStartup'))
+    quote = lambda value: str(value).replace("'", "''")
+    functions = functions.replace("ExpandConstant('{localappdata}\\TRAKFROM-BX')", "'" + quote(legacy) + "'")
+    functions = functions.replace("ExpandConstant('{localappdata}\\RekordboxUSB')", "'" + quote(data) + "'")
+    harness = tmp_path / 'startup.iss'
+    harness.write_text('[Setup]\nAppName=TRAKFROM-BX startup fixture\nAppVersion=1\n'
+        'DefaultDirName={tmp}\\unused\nPrivilegesRequired=lowest\nUninstallable=no\n'
+        'CreateAppDir=no\nOutputBaseFilename=startup\n[Code]\n'
+        "const RunKey = '" + key_path + "';\nvar OrphanedStartup: String;\n"
+        "function GetFileAttributesW(Name: String): Cardinal;\n external 'GetFileAttributesW@kernel32.dll stdcall';\n" +
+        functions + '\nfunction InitializeSetup: Boolean;\nvar Orphan: Boolean;\nbegin\n'
+        " OrphanedStartup := '" + quote(command) + "';\n Orphan := IsOrphanedStartup(OrphanedStartup);\n"
+        " if Orphan then SaveStringToFile('" + quote(report) + "', 'yes', False)\n"
+        " else SaveStringToFile('" + quote(report) + "', 'no', False);\n"
+        + (" RegWriteStringValue(HKCU, RunKey, 'TRAKFROM-BX', 'foreign-changed-command');\n"
+           if scenario == 'changed-value' and cleanup else '') +
+        (' if Orphan then begin\n try RemoveValidatedOrphanStartup; except end;\nend;\n' if cleanup else '') +
+        ' Result := False;\nend;\n', encoding='utf-8')
+    try:
+        with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, key_path, 0,
+                               winreg.KEY_SET_VALUE | winreg.KEY_WOW64_64KEY) as key:
+            winreg.SetValueEx(key, 'TRAKFROM-BX', 0, winreg.REG_SZ, command)
+            winreg.SetValueEx(key, 'Other application', 0, winreg.REG_SZ, 'preserved')
+        result = subprocess.run([str(compiler), '/O' + str(tmp_path), str(harness)],
+                                capture_output=True, text=True, timeout=30)
+        assert result.returncode == 0, result.stdout + result.stderr
+        subprocess.run([str(tmp_path / 'startup.exe'), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/SP-'],
+                       capture_output=True, timeout=15)
+        assert report.read_text(encoding='utf-8-sig') == ('yes' if orphan else 'no')
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0,
+                            winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as key:
+            assert winreg.QueryValueEx(key, 'Other application')[0] == 'preserved'
+            if cleanup and orphan and scenario != 'changed-value':
+                with pytest.raises(FileNotFoundError):
+                    winreg.QueryValueEx(key, 'TRAKFROM-BX')
+            else:
+                assert winreg.QueryValueEx(key, 'TRAKFROM-BX')[0] == (
+                    'foreign-changed-command' if cleanup and scenario == 'changed-value' else command)
+    finally:
+        winreg.DeleteKeyEx(winreg.HKEY_CURRENT_USER, key_path, winreg.KEY_WOW64_64KEY)
