@@ -22,16 +22,16 @@ def check(root):
         if path.is_file():
             actual.add(relative.as_posix())
     assert actual == allowed, {"extra": sorted(actual - allowed), "missing": sorted(allowed - actual)}
-    screenshot_hashes = {'screenshots/my-computer.png': '832fc5284387ccf73be3ddeb43b8e2186f80992b201d11e18a718e9ba0d6df41', 'screenshots/run-popup.png': '97f89fc036013ca580067c0106b842b440a8ef152d1d0fd3466603cb85d5db1f', 'screenshots/traktor.png': '4a61ce00e7b85fd31023b7201e7f73e65f1e68c674aa90850a2bf51b6fedb55a', 'screenshots/traktor_2.png': '19b3c126390e841371bd648051623e3865fe92c53c527379c379b09a3618b51f', 'screenshots/tray.png': '530b3e2a32b78647ab2a17907ee336ad6d94ac60c4c69f2e06e94ce7dca33b3b'}
+    screenshot_hashes = {'screenshots/my-computer.png': '832fc5284387ccf73be3ddeb43b8e2186f80992b201d11e18a718e9ba0d6df41', 'screenshots/run-popup.png': '97f89fc036013ca580067c0106b842b440a8ef152d1d0fd3466603cb85d5db1f', 'screenshots/traktor.png': '4a61ce00e7b85fd31023b7201e7f73e65f1e68c674aa90850a2bf51b6fedb55a', 'screenshots/traktor_2.png': '19b3c126390e841371bd648051623e3865fe92c53c527379c379b09a3618b51f'}
     blocked_imports = {"rekordbox_usb_internal", "pyrekordbox", "sqlcipher3", "pysqlcipher3"}
     secrets = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-proj-[A-Za-z0-9_-]{20,}|AKIA[A-Z0-9]{16}")
     personal = re.compile(r"C:[\\/]Users[\\/]|/Users/", re.IGNORECASE)
     for name in sorted(allowed):
         if name == "TRAKFROM-BX-Setup.exe":
             payload = (root / name).read_bytes()
-            assert len(payload) == 11448154, "Installer size mismatch"
+            assert len(payload) == 11443348, "Installer size mismatch"
             assert hashlib.sha256(payload).hexdigest() == (
-                "49ac8f7ba45af86a8a285c9cb4a7d30170398d59f6acde718f94e212e4274952"
+                "24f5f986fee8d6f2158528b0ad92c7451cb99526b55dddcb4e2e4bc426135006"
             ), "Installer SHA-256 mismatch"
             continue
         if name in screenshot_hashes:
