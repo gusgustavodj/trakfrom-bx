@@ -28,9 +28,9 @@ def check(root):
     for name in sorted(allowed):
         if name == "TRAKFROM-BX-Setup.exe":
             payload = (root / name).read_bytes()
-            assert len(payload) == 11445917, "Installer size mismatch"
+            assert len(payload) == 11447224, "Installer size mismatch"
             assert hashlib.sha256(payload).hexdigest() == (
-                "873af856ef684c3d6ddf8e0d30f00fd0bff0802bd2d397837a9283a0d28d017d"
+                "17b71b7b1ca6f48c2d734f78d01947f4dfee2568d994323604e5d4f120324e14"
             ), "Installer SHA-256 mismatch"
             continue
         data = (root / name).read_text(encoding="utf-8")
