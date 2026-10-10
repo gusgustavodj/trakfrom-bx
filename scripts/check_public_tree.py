@@ -22,6 +22,7 @@ def check(root):
         if path.is_file():
             actual.add(relative.as_posix())
     assert actual == allowed, {"extra": sorted(actual - allowed), "missing": sorted(allowed - actual)}
+    screenshot_hashes = {'screenshots/my-computer.png': '832fc5284387ccf73be3ddeb43b8e2186f80992b201d11e18a718e9ba0d6df41', 'screenshots/run-popup.png': '533159a8969950348c6cab4dc4e1f0270ce159f7c1d24c1c1d659bb627c74723', 'screenshots/traktor.png': 'dc8b56e8d06874cd7acfad19d9af6eb1ba5465e9e441221067cddbe551da363d', 'screenshots/traktor_2.png': '19b3c126390e841371bd648051623e3865fe92c53c527379c379b09a3618b51f', 'screenshots/tray.png': '530b3e2a32b78647ab2a17907ee336ad6d94ac60c4c69f2e06e94ce7dca33b3b'}
     blocked_imports = {"rekordbox_usb_internal", "pyrekordbox", "sqlcipher3", "pysqlcipher3"}
     secrets = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-proj-[A-Za-z0-9_-]{20,}|AKIA[A-Z0-9]{16}")
     personal = re.compile(r"C:[\\/]Users[\\/]|/Users/", re.IGNORECASE)
@@ -32,6 +33,11 @@ def check(root):
             assert hashlib.sha256(payload).hexdigest() == (
                 "f856fd688d4831d78dec528d761575c8e1e815af6010bb8fc60e4704f82bfdee"
             ), "Installer SHA-256 mismatch"
+            continue
+        if name in screenshot_hashes:
+            payload = (root / name).read_bytes()
+            assert payload.startswith(b"\x89PNG\r\n\x1a\n"), "Invalid screenshot PNG: " + name
+            assert hashlib.sha256(payload).hexdigest() == screenshot_hashes[name], "Screenshot SHA-256 mismatch: " + name
             continue
         data = (root / name).read_text(encoding="utf-8")
         # The scanner's rule strings are definitions, not credentials or user data.
