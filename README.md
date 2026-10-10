@@ -31,27 +31,27 @@ Installer SHA-256:
 
 ## Screenshots
 
-Screenshots supplied by the maintainer on 2026-10-10, showing the Windows and Traktor workflow. Drive letters and playlist contents are examples from that session. These images are included in the repository ZIP under `screenshots/`.
+Screenshots supplied by the maintainer on 2026-10-10, showing the Windows and Traktor workflow. Drive letters and playlist contents are examples from that session. The originals are included in the repository ZIP under `screenshots/`; the gallery uses GitHub image attachments for display. For offline viewing, open the PNG files in that folder.
 
 ### Starting TRAKFROM-BX
 
-![TRAKFROM-BX startup window awaiting Windows authorization](screenshots/run-popup.png)
+![TRAKFROM-BX startup window awaiting Windows authorization](https://github.com/user-attachments/assets/296de639-a069-4176-8bce-c7c63ece920b)
 
 ### Tray icon
 
-![TRAKFROM-BX running in the Windows system tray](screenshots/tray.png)
+![TRAKFROM-BX running in the Windows system tray](https://github.com/user-attachments/assets/7f39fdbc-f984-4d2c-8b0a-c74f75886f92)
 
 ### Virtual catalog and original USB
 
-![Windows Explorer showing the TRAKFROM_BX virtual volume and the original USB separately](screenshots/my-computer.png)
+![Windows Explorer showing the TRAKFROM_BX virtual volume and the original USB separately](https://github.com/user-attachments/assets/32ebacdb-4fea-49fe-b2b8-7852bf105798)
 
 ### Playlists in Traktor
 
-![Traktor browser showing the generated Rekordbox USB playlists](screenshots/traktor.png)
+![Traktor browser showing the generated Rekordbox USB playlists](https://github.com/user-attachments/assets/3aa2e6ec-4f92-47a6-9a3b-c59d41adc38e)
 
 ### Track loaded in Traktor
 
-![Traktor with a playlist selected and a track loaded in deck A](screenshots/traktor_2.png)
+![Traktor with a playlist selected and a track loaded in deck A](https://github.com/user-attachments/assets/5815abbd-8c0a-4f84-9f1c-bd6c404f7f95)
 
 ## What is TRAKFROM-BX?
 
