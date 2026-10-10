@@ -21,7 +21,7 @@ def check(root, directory):
         if wheel:
             with zipfile.ZipFile(path) as archive:
                 content = {name: archive.read(name) for name in archive.namelist() if not name.endswith("/")}
-            prefix = "trakfrom_bx-0.1.0.dev0.dist-info/"
+            prefix = "trakfrom_bx-1.0.dist-info/"
             mapped = {"src/" + name: data for name, data in content.items() if name.startswith("rekordbox_usb/")}
             expected = {name for name in public if name.startswith("src/")}
             metadata_names = {prefix + name for name in ("METADATA", "WHEEL", "entry_points.txt", "top_level.txt", "RECORD", "licenses/LICENSE")}
@@ -32,7 +32,7 @@ def check(root, directory):
                 members = archive.getmembers()
                 assert all(member.isfile() or member.isdir() for member in members)
                 content = {member.name: archive.extractfile(member).read() for member in members if member.isfile()}
-            prefix = "trakfrom_bx-0.1.0.dev0/"
+            prefix = "trakfrom_bx-1.0/"
             assert all(name.startswith(prefix) for name in content)
             logical = {name[len(prefix):]: data for name, data in content.items()}
             generated = {"PKG-INFO", "setup.cfg"} | {"src/trakfrom_bx.egg-info/" + name for name in ("PKG-INFO", "SOURCES.txt", "dependency_links.txt", "entry_points.txt", "requires.txt", "top_level.txt")}
@@ -47,7 +47,7 @@ def check(root, directory):
         assert all(data == (root / name).read_bytes() for name, data in mapped.items())
         assert license_data == (root / "LICENSE").read_bytes()
         meta = BytesParser().parsebytes(metadata)
-        assert meta["Name"] == "trakfrom-bx" and meta["Version"] == "0.1.0.dev0"
+        assert meta["Name"] == "trakfrom-bx" and meta["Version"] == "1.0"
         assert meta["License-Expression"] == "MIT" and meta["License-File"] == "LICENSE"
         assert meta.get_payload().replace("\r\n", "\n").strip() == (root / "README.md").read_text().strip()
         assert not [value for value in meta.get_all("Requires-Dist", []) if "extra ==" not in value]

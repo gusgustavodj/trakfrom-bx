@@ -28,9 +28,9 @@ def check(root):
     for name in sorted(allowed):
         if name == "TRAKFROM-BX-Setup.exe":
             payload = (root / name).read_bytes()
-            assert len(payload) == 11447224, "Installer size mismatch"
+            assert len(payload) == 11447850, "Installer size mismatch"
             assert hashlib.sha256(payload).hexdigest() == (
-                "17b71b7b1ca6f48c2d734f78d01947f4dfee2568d994323604e5d4f120324e14"
+                "f856fd688d4831d78dec528d761575c8e1e815af6010bb8fc60e4704f82bfdee"
             ), "Installer SHA-256 mismatch"
             continue
         data = (root / name).read_text(encoding="utf-8")
@@ -45,7 +45,7 @@ def check(root):
                 imports = [n.name for n in node.names] if isinstance(node, ast.Import) else ([node.module] if isinstance(node, ast.ImportFrom) and node.module else [])
                 assert not any(module.split(".")[0] in blocked_imports for module in imports), name
     project = tomllib.loads((root / "pyproject.toml").read_text())["project"]
-    assert project["name"] == "trakfrom-bx" and project["version"] == "0.1.0.dev0"
+    assert project["name"] == "trakfrom-bx" and project["version"] == "1.0"
     assert project["license"] == "MIT" and project["license-files"] == ["LICENSE"]
     assert project["dependencies"] == []
     assert "Operating System :: MacOS" not in project["classifiers"]

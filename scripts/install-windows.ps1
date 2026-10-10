@@ -68,7 +68,7 @@ $key = Get-TrakfromRegistration
 New-Item -Path $key -Force | Out-Null
 $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $values = @{
-    DisplayName = 'TRAKFROM-BX'; DisplayVersion = '0.1.0.dev0'; InstallLocation = $InstallRoot;
+    DisplayName = 'TRAKFROM-BX'; DisplayVersion = '1.0'; InstallLocation = $InstallRoot;
     UninstallString = ('"{0}" -NoProfile -ExecutionPolicy Bypass -File "{1}"' -f $powershell, (Join-Path $InstallRoot 'uninstall-windows.ps1'));
     DisplayIcon = (Join-Path $environment 'Scripts\pythonw.exe')
 }
