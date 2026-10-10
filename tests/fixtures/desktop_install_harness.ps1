@@ -60,7 +60,7 @@ function Invoke-FixtureScript([string]$Path, [hashtable]$Parameters) {
     $text = $text.Replace('$PSScriptRoot', ("'" + $PSScriptRoot.Replace("'", "''") + "'"))
     & ([scriptblock]::Create($text)) @Parameters
 }
-$wheel = Join-Path $Work 'trakfrom_bx-0.1.0.dev0-py3-none-any.whl'
+$wheel = Join-Path $Work 'trakfrom_bx-1.0-py3-none-any.whl'
 New-Item -ItemType File -Path $wheel | Out-Null
 $root = Join-Path $env:LOCALAPPDATA 'TRAKFROM-BX'
 $blocked = $false
