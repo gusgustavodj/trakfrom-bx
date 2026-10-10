@@ -230,3 +230,73 @@ def test_reader_metadata_inconsistency_fails_without_partial_library(tmp_path, i
     result = read_legacy(tmp_path)
     assert result["status"] == "INVALID_LIBRARY"
     assert result["library"] is None
+
+
+@pytest.mark.parametrize("name,relative,mode", [
+    ("Synthetic Artist", 10, "short_ascii"),
+    (("Synthetic " * 16).strip(), 12, "long_ascii"),
+    ('Artista ç & <duo> "A"', 12, "utf16"),
+])
+def test_artist_survives_source_reader_conversion_and_public_playlist(tmp_path, monkeypatch, name, relative, mode):
+    source, mount = tmp_path / "usb", tmp_path / "mount"
+    builder = (SyntheticLegacyPdbBuilder()
+               .add_artist(71, name, name_relative=relative, name_mode=mode)
+               .add_track(1, "First", "Contents/1.mp3", artist_id=71)
+               .add_track(2, "Second", "Contents/2.mp3", artist_id=71)
+               .add_track(3, "Unknown", "Contents/3.mp3")
+               .add_node(10, "Synthetic List").add_playlist_entries(10, [2, 1, 3]))
+    database = source / "PIONEER/rekordbox/export.pdb"
+    database.parent.mkdir(parents=True)
+    database.write_bytes(builder.build())
+    for ident in (1, 2, 3):
+        audio = source / f"Contents/{ident}.mp3"
+        audio.parent.mkdir(exist_ok=True)
+        audio.write_bytes(b"synthetic placeholder, not audio")
+    before = {p: p.read_bytes() for p in source.rglob("*") if p.is_file()}
+    raw = read_legacy(source)
+    assert raw["status"] == "SUCCESS"
+    assert [t.get("artist") for t in raw["library"]["tracks"]] == [name, name, None]
+    runtime = _runtime(source, _Backend(mount))
+    library = _LegacyReader(tmp_path / "data").read(runtime._session(runtime._selected_volume(source)))
+    assert [t.artist for t in library.tracks] == [name, name, None]
+    # An existing catalog from the previous reader has no artist, while the USB
+    # database is identical. Upgrading must refresh that local catalog too.
+    original_read = _LegacyReader.read
+
+    def previous_reader(reader, session):
+        library = original_read(reader, session)
+        library.tracks = [replace(t, artist=None) for t in library.tracks]
+        return library
+
+    with monkeypatch.context() as patch:
+        patch.setattr(_LegacyReader, "read", previous_reader)
+        assert runtime.publish(source, tmp_path / "data").track_count == 3
+    old_entries = ET.parse(next(mount.rglob("*.nml"))).findall("./COLLECTION/ENTRY")
+    assert all(e.get("ARTIST") == "" for e in old_entries)
+    assert runtime.publish(source, tmp_path / "data").changed
+    entries = ET.parse(next(mount.rglob("*.nml"))).findall("./COLLECTION/ENTRY")
+    assert [(e.get("TITLE"), e.get("ARTIST")) for e in entries] == [
+        ("Second", name), ("First", name), ("Unknown", "")]
+    assert not runtime.publish(source, tmp_path / "data").changed
+    assert before == {p: p.read_bytes() for p in source.rglob("*") if p.is_file()}
+
+
+@pytest.mark.parametrize("invalid", ["dangling", "duplicate", "empty", "bad_offset"])
+def test_artist_inconsistency_refuses_partial_library(tmp_path, invalid):
+    builder = (SyntheticLegacyPdbBuilder()
+               .add_track(1, "Synthetic", "Contents/1.mp3", artist_id=71)
+               .add_node(10, "Synthetic").add_entry(10, 1, 0))
+    if invalid != "dangling":
+        builder.add_artist(71, "" if invalid == "empty" else "Synthetic Artist")
+    if invalid == "duplicate":
+        builder.add_artist(71, "Other Artist")
+    image = builder.build_image()
+    payload = bytearray(image.data)
+    if invalid == "bad_offset":
+        payload[image.row_addresses[2][0] + 9] = 0
+    database = tmp_path / "PIONEER/rekordbox/export.pdb"
+    database.parent.mkdir(parents=True)
+    database.write_bytes(payload)
+    result = read_legacy(tmp_path)
+    assert result["status"] == "INVALID_LIBRARY"
+    assert result["library"] is None
