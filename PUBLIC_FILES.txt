@@ -27,7 +27,6 @@ screenshots/my-computer.png
 screenshots/run-popup.png
 screenshots/traktor.png
 screenshots/traktor_2.png
-screenshots/tray.png
 scripts/build_backend.py
 scripts/check_artifacts.py
 scripts/check_public_tree.py

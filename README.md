@@ -15,9 +15,12 @@ installation is required.
 [Installer in the repository](./TRAKFROM-BX-Setup.exe)
 | [Preview release notes](https://github.com/gusgustavodj/trakfrom-bx/releases/tag/v0.1.0-preview.1)
 
-This unsigned preview Setup was built on 2026-10-10 (build 2026101004).
+This unsigned preview Setup was built on 2026-10-10 (build 2026101005).
 It includes a compact startup window and a generic Windows tray icon, and supports starting TRAKFROM-BX
 while Traktor is already running. Keep the USB connected during playback.
+This build preserves artist names from supported USB libraries in generated NML playlists.
+To refresh an existing catalog, close Traktor, exit TRAKFROM-BX, install this update,
+then start TRAKFROM-BX with the USB connected and wait for publication before reopening Traktor.
 
 After installing or upgrading, the program folder (normally
 `C:\Program Files\TRAKFROM-BX`) contains **TRAKFROM-BX.exe** to start the
@@ -25,7 +28,7 @@ application and **Uninstall-TRAKFROM-BX.exe** to open the registered uninstaller
 Run the new Setup to update an installation made with the previous preview.
 
 Installer SHA-256:
-`49ac8f7ba45af86a8a285c9cb4a7d30170398d59f6acde718f94e212e4274952`
+`24f5f986fee8d6f2158528b0ad92c7451cb99526b55dddcb4e2e4bc426135006`
 
 ---
 
@@ -36,7 +39,6 @@ Screenshots supplied by the maintainer on 2026-10-10, showing the Windows and Tr
 ### Starting TRAKFROM-BX
 
 ![TRAKFROM-BX startup window awaiting Windows authorization](https://github.com/user-attachments/assets/cd6c703b-7d3c-40b8-8b5e-20f9b7860a5a)
-
 
 ### Virtual catalog and original USB
 
@@ -181,7 +183,7 @@ removing it.
 | Privileged storage worker | Accept the worker's UAC prompt; wait for the tray icon. | Starts a separate elevated worker for Windows virtual-disk operations. It does not install a persistent service or elevated scheduled task. |
 | USB detection | Connect a supported USB, or leave it connected before launch. | Detects existing sources and monitors insertion/removal. Multiple sources are managed separately. |
 | Rekordbox library read | Keep the USB connected. | Reads the supported Legacy Device Library database (`export.pdb`) and relevant library metadata from the USB. It does not modify the source library. |
-| Catalog generation | Wait for publication. | Normalizes tracks/playlists and generates Traktor-compatible NML with supported BPM/key metadata and references to original audio paths. |
+| Catalog generation | Wait for publication. | Normalizes tracks/playlists and generates Traktor-compatible NML with supported artist/BPM/key metadata and references to original audio paths. |
 | Managed virtual disk publication | Leave the worker running. | Creates/reuses a local VHDX and mounts it to expose generated playlists/catalogs to Traktor. NML and a catalog manifest are written to the managed volume; ownership/state records remain local. |
 | Open Traktor | If Traktor is not already running, open it after the startup window becomes a tray icon. | Continues USB monitoring and managed-volume lifecycle handling; it does not launch or configure Traktor. |
 | Browse playlist | Browse the managed source and select a playlist. | Makes the generated catalog available on the mounted volume. |
