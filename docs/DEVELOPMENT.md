@@ -15,7 +15,7 @@ $env:SOURCE_DATE_EPOCH = '1791504000'
 & .\.venv\Scripts\python.exe scripts\run_public_tests.py --temp-root "$env:TEMP\trakfrom-bx-tests"
 & .\.venv\Scripts\python.exe -m build --no-isolation
 & .\.venv\Scripts\python.exe scripts\check_artifacts.py dist
-& .\.venv\Scripts\python.exe -m pip install --no-index --no-deps --force-reinstall .\dist\trakfrom_bx-0.1.0.dev0-py3-none-any.whl
+& .\.venv\Scripts\python.exe -m pip install --no-index --no-deps --force-reinstall .\dist\trakfrom_bx-1.0-py3-none-any.whl
 & .\.venv\Scripts\python.exe scripts\smoke_imports.py --installed
 & .\.venv\Scripts\python.exe scripts\run_public_tests.py --installed --temp-root "$env:TEMP\trakfrom-bx-installed-tests"
 & .\.venv\Scripts\trakfrom-bx.exe --help
