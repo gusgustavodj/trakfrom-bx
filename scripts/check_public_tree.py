@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -25,6 +26,13 @@ def check(root):
     secrets = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-proj-[A-Za-z0-9_-]{20,}|AKIA[A-Z0-9]{16}")
     personal = re.compile(r"C:[\\/]Users[\\/]|/Users/", re.IGNORECASE)
     for name in sorted(allowed):
+        if name == "TRAKFROM-BX-Setup.exe":
+            payload = (root / name).read_bytes()
+            assert len(payload) == 11441231, "Installer size mismatch"
+            assert hashlib.sha256(payload).hexdigest() == (
+                "07604299ec22e11b1d620f6b87c56911f16275885e9aa204506ad9a14e46350d"
+            ), "Installer SHA-256 mismatch"
+            continue
         data = (root / name).read_text(encoding="utf-8")
         # The scanner's rule strings are definitions, not credentials or user data.
         if name != "scripts/check_public_tree.py":
