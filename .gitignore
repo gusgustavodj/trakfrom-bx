@@ -18,6 +18,7 @@ htmlcov/
 *.log
 *.tmp
 *.exe
+!/TRAKFROM-BX-Setup.exe
 *.zip
 *.whl
 *.tar.gz

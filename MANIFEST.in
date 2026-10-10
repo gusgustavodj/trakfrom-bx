@@ -18,6 +18,7 @@ include packaging/windows/TRAKFROM-BX.iss
 include PUBLIC_FILES.txt
 include pyproject.toml
 include README.md
+include TRAKFROM-BX-Setup.exe
 include scripts/build_backend.py
 include scripts/check_artifacts.py
 include scripts/check_public_tree.py

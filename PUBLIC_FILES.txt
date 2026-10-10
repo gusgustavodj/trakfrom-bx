@@ -18,6 +18,7 @@ packaging/windows/TRAKFROM-BX.iss
 PUBLIC_FILES.txt
 pyproject.toml
 README.md
+TRAKFROM-BX-Setup.exe
 scripts/build_backend.py
 scripts/check_artifacts.py
 scripts/check_public_tree.py
