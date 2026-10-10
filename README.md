@@ -15,12 +15,17 @@ installation is required.
 [Installer in the repository](./TRAKFROM-BX-Setup.exe)
 | [Preview release notes](https://github.com/gusgustavodj/trakfrom-bx/releases/tag/v0.1.0-preview.1)
 
-This is the existing unsigned Setup built on 2026-10-09, not a stable release.
-It retains the original startup/tray UI; later English notices and About in the
-current source are not included. Keep the USB connected during playback.
+This unsigned preview Setup was built on 2026-10-10 (build 2026101001).
+It includes the current startup/tray UI and supports starting TRAKFROM-BX
+while Traktor is already running. Keep the USB connected during playback.
+
+After installing or upgrading, the program folder (normally
+`C:\Program Files\TRAKFROM-BX`) contains **TRAKFROM-BX.exe** to start the
+application and **Uninstall-TRAKFROM-BX.exe** to open the registered uninstaller.
+Run the new Setup to update an installation made with the previous preview.
 
 Installer SHA-256:
-`07604299ec22e11b1d620f6b87c56911f16275885e9aa204506ad9a14e46350d`
+`873af856ef684c3d6ddf8e0d30f00fd0bff0802bd2d397837a9283a0d28d017d`
 
 ---
 
@@ -52,7 +57,7 @@ The normal installation flow is:
 5. Start TRAKFROM-BX as a normal user and accept UAC for its storage worker.
 6. Wait until the startup window becomes the TRAKFROM-BX tray icon.
 7. Connect a supported rekordbox USB drive if one is not already connected.
-8. Open Traktor manually using its own shortcut.
+8. If Traktor is not already running, open it manually using its own shortcut.
 9. Browse the TRAKFROM-BX-managed source and playlists.
 10. Load a track normally in Traktor.
 
@@ -61,6 +66,15 @@ No separate Python installation is required. The normal path is
 The GitHub preview Release is an additional distribution channel. Older tagged
 source archives reflect their original commit and may not include the EXE;
 use the current main branch ZIP for the combined source-and-installer package.
+
+### Starting while Traktor is running
+
+Start `TRAKFROM-BX.exe` normally, even with Traktor open. TRAKFROM-BX does not
+start another Traktor instance. A cached catalog that requires rewriting while
+Traktor is using it waits until Traktor closes; the tray reports pending catalogs.
+Host state that cannot be determined remains a startup error. This change was
+tested with synthetic host/storage fixtures; real Traktor validation of this
+new build remains to be performed.
 
 ### From USB to playback
 

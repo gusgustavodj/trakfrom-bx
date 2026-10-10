@@ -110,3 +110,5 @@ include tests/fixtures/desktop_install_harness.ps1
 include tests/fixtures/secure_script_io.py
 include tests/fixtures/synthetic_legacy_pdb.py
 include tests/integration/test_library_service.py
+include tests/contracts/test_native_frontends.py
+include packaging/windows/native_frontend.c
