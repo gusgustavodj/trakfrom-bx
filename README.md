@@ -1,6 +1,25 @@
 # TRAKFROM-BX
 
-> Private preview / pre-release
+> Windows preview / pre-release
+
+## Download the Windows installer
+
+### [Download TRAKFROM-BX-Setup.exe](https://github.com/gusgustavodj/trakfrom-bx/releases/download/v0.1.0-preview.1/TRAKFROM-BX-Setup.exe)
+
+**Windows 11 preview · Python included · No separate Python installation required**
+
+[Release notes and installation instructions](https://github.com/gusgustavodj/trakfrom-bx/releases/tag/v0.1.0-preview.1)
+| [README.txt](https://github.com/gusgustavodj/trakfrom-bx/releases/download/v0.1.0-preview.1/README.txt)
+| [SHA256SUMS.txt](https://github.com/gusgustavodj/trakfrom-bx/releases/download/v0.1.0-preview.1/SHA256SUMS.txt)
+
+Download the **Setup.exe above** to install the application. GitHub's **Code ->
+Download ZIP** and automatic **Source code** archives are developer source.
+
+This is the existing unsigned Setup built on 2026-10-09, not a stable release.
+It retains the original startup/tray UI; later English notices and About in the
+current source are not included. See the release notes for validation and limits.
+
+---
 
 ## What is TRAKFROM-BX?
 
@@ -20,8 +39,8 @@ files are written locally on the computer; audio remains on the original USB.
 
 ### Quick start
 
-There is **no public GitHub Release or public installer download yet**.
-When an official Windows installer is provided, the normal installation flow is:
+The Windows preview installer is available in the **Download** section above.
+The normal installation flow is:
 
 1. Download the official `TRAKFROM-BX-Setup.exe` from the project's GitHub Release.
 2. Run `TRAKFROM-BX-Setup.exe` and accept the installation UAC prompt.
@@ -34,7 +53,7 @@ When an official Windows installer is provided, the normal installation flow is:
 9. Browse the TRAKFROM-BX-managed source and playlists.
 10. Load a track normally in Traktor.
 
-No separate Python installation is required. The intended download path is
+No separate Python installation is required. The download path is
 **GitHub Release -> TRAKFROM-BX-Setup.exe**. GitHub's automatically generated
 **Source code (zip)** is source code, not the normal Windows installer.
 A Windows distribution ZIP would be an alternative only if adopted for a future
@@ -91,7 +110,7 @@ removing it.
 
 | Step | What you do | What TRAKFROM-BX does |
 | --- | --- | --- |
-| Download | Obtain the official Windows installer when available. | No application process runs yet. |
+| Download | Obtain the official Windows preview installer linked above. | No application process runs yet. |
 | Install | Run Setup; choose the destination and shortcut/startup options. | Installs the bundled runtime and application locally, normally under Program Files/TRAKFROM-BX; creates selected shortcuts and current-user startup registration. Installation may show UAC. |
 | Start TRAKFROM-BX | Launch the application as a normal user. | Starts the desktop launcher, startup window and tray interface. |
 | Privileged storage worker | Accept the worker's UAC prompt; wait for the tray icon. | Starts a separate elevated worker for Windows virtual-disk operations. It does not install a persistent service or elevated scheduled task. |
@@ -161,7 +180,7 @@ requests shutdown; cleanup still waits for all Traktor processes to close.
 | Automatic Traktor Track Collection cleanup | NOT IMPLEMENTED |
 | Direct collection.nml mutation | Not performed by TRAKFROM-BX |
 | macOS | Community port welcome; not maintainer physically validated |
-| Installer | Currently unsigned; no public release download yet |
+| Installer | Unsigned Windows preview; [download Setup.exe](https://github.com/gusgustavodj/trakfrom-bx/releases/download/v0.1.0-preview.1/TRAKFROM-BX-Setup.exe) |
 | Run on Windows startup | May cause recurring UAC for the privileged storage worker |
 
 ## Rekordbox library formats
