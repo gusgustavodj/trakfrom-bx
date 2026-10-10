@@ -26,6 +26,7 @@ DISPLAY_STATES = {
     "Pronto; pode abrir o Traktor": "Ready; you can open Traktor",
     "Abrindo Traktor": "Opening Traktor...",
     "Ativo": "Active",
+    "Ativo; catálogos aguardam Traktor fechar": "Active; existing catalogs wait for Traktor to close",
     "Encerrando": "Shutting down...",
     "Encerramento solicitado; feche o Traktor": "Shutdown requested; close Traktor",
     "Encerrando volumes": "Closing volumes...",
@@ -104,7 +105,7 @@ class WindowsTray:
         with self._lock:
             status = DISPLAY_STATES.get(self._state, "Preparing TRAKFROM-BX...")
         return ("TRAKFROM-BX is starting\n\n" + status + "\n\n"
-                "Open Traktor when this window becomes a tray icon.\n\n" + PROJECT_NOTICE)
+                "Traktor may already be running. Wait for this window to become a tray icon.\n\n" + PROJECT_NOTICE)
 
     def about_text(self):
         return (f"TRAKFROM-BX\nVersion {__version__}\n\n" + PROJECT_NOTICE +

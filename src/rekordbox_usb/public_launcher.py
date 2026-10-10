@@ -315,6 +315,7 @@ class WorkerJournal:
     ERRORS = {"VOLUME_ERROR", "SOURCE_PREFLIGHT_FAILED", "STARTUP_RECOVERY_ERROR",
               "SHUTDOWN_CLEANUP_ERROR", "USB_UNPUBLICATION_ERROR", "WATCH_ERROR"}
     EVENTS = ERRORS | {"USB_PUBLISHED", "MANAGED_VHDX_RECONCILED", "HOST_PROCESS_STATE_UNKNOWN",
+                       "USB_PUBLICATION_DEFERRED",
                        "SHUTDOWN_CLEANUP_STARTED", "SHUTDOWN_UNPUBLISHED",
                        "SHUTDOWN_CLEANUP_DEFERRED", "SHUTDOWN_CLEANUP_COMPLETED"}
 
@@ -322,8 +323,19 @@ class WorkerJournal:
         self.session, self.phase, self.startup_errors = session, "STARTUP", []
         self.warnings = 0
         self.cleanup = None
+        self.deferred_sources = set()
 
     def event(self, event):
+        source_id = event.details.get("source_id")
+        if event.event == "USB_PUBLICATION_DEFERRED" and isinstance(source_id, str):
+            self.deferred_sources.add(source_id)
+        elif event.event in ("USB_PUBLISHED", "MANAGED_VHDX_RECONCILED"):
+            self.deferred_sources.discard(source_id)
+        if self.phase == "READY" and event.event in (
+            "USB_PUBLICATION_DEFERRED", "USB_PUBLISHED", "MANAGED_VHDX_RECONCILED"
+        ):
+            write_status(self.session, "READY", code="SERVICE_READY",
+                         deferred_publications=len(self.deferred_sources))
         blocked = event.event == "VOLUME_IGNORED" and event.details.get("reason") == "PREFLIGHT_BLOCKED"
         diagnostic = event.details.get("diagnostic", {})
         code = (event.details.get("code") or event.details.get("diagnostic_code")
@@ -354,7 +366,8 @@ class WorkerJournal:
         if self.startup_errors:
             raise LauncherError(str(self.startup_errors[0]))
         self.phase = "READY"
-        write_status(self.session, "READY", code="SERVICE_READY")
+        write_status(self.session, "READY", code="SERVICE_READY",
+                     deferred_publications=len(self.deferred_sources))
 
     def finish(self, result, remaining):
         clean = (result == 0 and self.cleanup is not None and not remaining
@@ -445,7 +458,8 @@ def supervise_service(worker, session, ui, probe, *, clock=time.monotonic,
             if ready and not stopping:
                 state = probe.state()
                 if state is HostProcessState.RUNNING:
-                    ui.update("Ativo")
+                    ui.update("Ativo; catálogos aguardam Traktor fechar"
+                              if status.get("deferred_publications", 0) else "Ativo")
                     seen = True
                 elif seen and state is HostProcessState.NOT_RUNNING:
                     ui.update("Encerrando volumes" if shutdown_on_close() else
@@ -465,8 +479,8 @@ def service(installations, data_root, *, ui_factory=None):
         raise LauncherError("START_SHORTCUT_AS_NORMAL_USER")
     validate_root(data_root)
     probe = host_probe(installations)
-    if probe.state() is not HostProcessState.NOT_RUNNING:
-        raise LauncherError("CLOSE_TRAKTOR_BEFORE_LAUNCH")
+    if probe.state() not in (HostProcessState.NOT_RUNNING, HostProcessState.RUNNING):
+        raise LauncherError("HOST_STATE_UNKNOWN")
     if ui_factory is None:
         from .windows_tray import WindowsTray
         from .desktop_preferences import DesktopSettings, PreferenceStore

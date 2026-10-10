@@ -102,9 +102,23 @@ class PublicWatchRuntime:
         )
 
     def _event(self, event: WatchUsbEvent) -> None:
+        diagnostic = event.details.get("diagnostic", {})
+        if (event.event == "VOLUME_ERROR" and event.volume is not None and isinstance(diagnostic, dict)
+                and diagnostic.get("code") == "HOST_NOT_CLEAR"):
+            try:
+                running = self.runtime._host_probe.state() is HostProcessState.RUNNING
+            except Exception:
+                running = False
+            if running:
+                event = replace(event, event="USB_PUBLICATION_DEFERRED", details={
+                    **event.details,
+                    "source_id": self._source_by_volume.get(volume_key(event.volume)),
+                    "reason": "TRAKTOR_RUNNING",
+                })
         states = {
             "VOLUME_ARRIVED": "DETECTED", "USB_PUBLICATION_STARTED": "PUBLISHING",
             "USB_PUBLISHED": "PUBLISHED", "MANAGED_VHDX_RECONCILED": "PUBLISHED",
+            "USB_PUBLICATION_DEFERRED": "DEFERRED",
             "VOLUME_REMOVED": "REMOVED", "USB_UNPUBLICATION_STARTED": "UNPUBLISHING",
             "USB_UNPUBLISHED": "REMOVED", "SHUTDOWN_UNPUBLISHED": "REMOVED",
             "USB_UNPUBLICATION_DEFERRED": "DEFERRED", "STARTUP_RECOVERY_DEFERRED": "DEFERRED",
