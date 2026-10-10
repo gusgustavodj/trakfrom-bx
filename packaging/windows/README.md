@@ -51,3 +51,17 @@ published and existing attached catalogs reconciled through existing guards.
 An existing detached catalog that needs reuse/rewrite is deferred until the
 host closes; the service stays active and reports the pending catalogs.
 Unknown host state, source protection, ownership and cleanup remain fail-closed.
+
+Reinstallation checks the old PowerShell registration against its canonical
+per-user folder. An identified entry whose folder is absent or empty does not
+block Setup. An active installation, redirected path or foreign registration
+still blocks. After successful installation, and during uninstall, an identified
+obsolete entry with no child records is removed. Uninstall removes installed
+application files, owned shortcuts and startup/uninstall registrations; user
+preferences and managed catalogs are preserved. Unexpected records are preserved.
+
+When the current installation is identified, interactive Setup offers update /
+replace program files, uninstall and install again, or uninstall only. Update
+uses the normal Inno upgrade log without uninstalling first. The other choices
+run only this installation's registered uninstaller and wait for it. Cancelled
+or partial uninstall blocks replacement. Uninstall only closes Setup afterward.
