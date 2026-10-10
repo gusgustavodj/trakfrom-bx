@@ -15,8 +15,8 @@ installation is required.
 [Installer in the repository](./TRAKFROM-BX-Setup.exe)
 | [Preview release notes](https://github.com/gusgustavodj/trakfrom-bx/releases/tag/v0.1.0-preview.1)
 
-This unsigned preview Setup was built on 2026-10-10 (build 2026101003).
-It includes the current startup/tray UI and supports starting TRAKFROM-BX
+This unsigned preview Setup was built on 2026-10-10 (build 2026101004).
+It includes a compact startup window and a generic Windows tray icon, and supports starting TRAKFROM-BX
 while Traktor is already running. Keep the USB connected during playback.
 
 After installing or upgrading, the program folder (normally
@@ -25,7 +25,7 @@ application and **Uninstall-TRAKFROM-BX.exe** to open the registered uninstaller
 Run the new Setup to update an installation made with the previous preview.
 
 Installer SHA-256:
-`f856fd688d4831d78dec528d761575c8e1e815af6010bb8fc60e4704f82bfdee`
+`49ac8f7ba45af86a8a285c9cb4a7d30170398d59f6acde718f94e212e4274952`
 
 ---
 
