@@ -10,7 +10,7 @@
 #endif
 #define ProductId "{574E3A6C-90F3-489F-A34F-C1D1A3E8609F}"
 #define ProductVersion "1.0"
-#define BuildNumber 2026101004
+#define BuildNumber 2026101005
 
 [Setup]
 AppId={{574E3A6C-90F3-489F-A34F-C1D1A3E8609F}
