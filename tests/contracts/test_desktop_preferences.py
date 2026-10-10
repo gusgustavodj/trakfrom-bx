@@ -190,13 +190,14 @@ def test_startup_notice_is_english_operational_and_contains_project_notices(stat
     owner.update(state)
     text = owner.startup_text()
     assert text.startswith("TRAKFROM-BX is starting")
-    assert "Open Traktor when this window becomes a tray icon." in text
+    assert "Traktor may already be running." in text
+    assert "Wait for this window to become a tray icon." in text
     assert "MIT License" in text and "github.com/gusgustavodj/trakfrom-bx" in text
     assert "independent project" in text
     assert all(name in text for name in ("Native Instruments", "AlphaTheta", "Pioneer DJ", "rekordbox"))
     assert not any(word in text.lower() for word in (
         "instagram", "thanks", "onelibrary", "device library plus", "fork", "preparando", "autorização"))
-    assert text.index("Open Traktor") < text.index("MIT License") < text.index("independent project")
+    assert text.index("Traktor may already be running") < text.index("MIT License") < text.index("independent project")
     assert not owner.stop_requested()
 
 

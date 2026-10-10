@@ -284,6 +284,42 @@ def test_cancel_popup_before_elevation_never_starts_worker(tmp_path, monkeypatch
     assert ui.events == ["popup", "closed"]
 
 
+@pytest.mark.parametrize("state", list(HostProcessState))
+def test_service_can_start_with_running_host_but_rejects_unknown(tmp_path, monkeypatch, state):
+    import ctypes
+    import rekordbox_usb.public_launcher as launcher
+    ui, calls = ServiceUI(startup=True), []
+    worker = SimpleNamespace(close=lambda: calls.append("closed"))
+    monkeypatch.setattr(ctypes.windll.shell32, "IsUserAnAdmin", lambda: False)
+    monkeypatch.setattr(launcher, "validate_root", lambda _: None)
+    monkeypatch.setattr(launcher, "host_probe", lambda _: SimpleNamespace(state=lambda: state))
+    monkeypatch.setattr(launcher, "preflight_sources", lambda *_: calls.append("preflight"))
+    monkeypatch.setattr(launcher, "elevate_worker", lambda *_: (calls.append("elevate") or worker))
+    monkeypatch.setattr(launcher, "supervise_service", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr(launcher.subprocess, "Popen", lambda *_args, **_kwargs:
+                        pytest.fail("service must not open a second Traktor"))
+    if state is HostProcessState.UNKNOWN:
+        with pytest.raises(LauncherError, match="HOST_STATE_UNKNOWN"):
+            service([], tmp_path, ui_factory=lambda *_args, **_kwargs: ui)
+        assert not calls and not ui.events
+    else:
+        assert service([], tmp_path, ui_factory=lambda *_args, **_kwargs: ui) == 0
+        assert calls == ["preflight", "elevate", "closed"]
+        assert ui.events == ["popup", "Aguardando autorização do Windows", "closed"]
+
+
+def test_deferred_catalog_is_ready_without_false_startup_failure(tmp_path):
+    from rekordbox_usb.usb_watch import WatchUsbEvent
+    import json
+    journal = WorkerJournal(tmp_path)
+    journal.event(WatchUsbEvent("USB_PUBLICATION_DEFERRED", None, {
+        "source_id": "synthetic-source", "reason": "TRAKTOR_RUNNING"}))
+    journal.ready()
+    assert json.loads((tmp_path / "status.json").read_text())["deferred_publications"] == 1
+    journal.event(WatchUsbEvent("USB_PUBLISHED", None, {"source_id": "synthetic-source"}))
+    assert json.loads((tmp_path / "status.json").read_text())["deferred_publications"] == 0
+
+
 def test_transient_runtime_warning_does_not_report_failed_cleanup(tmp_path):
     from rekordbox_usb.usb_watch import WatchUsbEvent
     journal = WorkerJournal(tmp_path)

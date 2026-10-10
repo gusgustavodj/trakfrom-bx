@@ -278,6 +278,29 @@ def test_hot_insert_new_source_allowed_while_host_running(tmp_path):
     assert len(watch.watcher.active_publications) == 1
 
 
+def test_start_with_running_host_defers_detached_cache_then_retries_safely(tmp_path):
+    from rekordbox_usb.public_launcher import WorkerJournal
+    a, host = usb(tmp_path, 1), Host()
+    first, _, backend, _ = scenario(tmp_path, [(a,)], host=host)
+    first.run(max_cycles=1)
+    active = first.watcher.active_publications[0]
+    first.runtime.detach_managed(active.source_id, active.vhdx_path, first.data_root)
+    before = {path: tuple(item.calls) for path, item in backend.by_path.items()}
+    host.current = HostProcessState.RUNNING
+    journal_root = tmp_path / "journal"
+    journal_root.mkdir()
+    journal = WorkerJournal(journal_root)
+    def host_closed():
+        assert before == {path: tuple(item.calls) for path, item in backend.by_path.items()}
+        host.current = HostProcessState.NOT_RUNNING
+        return (a,)
+    second, _, _, events = scenario(tmp_path, [(a,), (a,), host_closed], backend=backend, host=host,
+                                    sink=journal.event, on_startup_complete=journal.ready)
+    assert second.run(max_cycles=2) == 0
+    assert any(event.event == "USB_PUBLICATION_DEFERRED" for event in events)
+    assert len(second.watcher.active_publications) == 1
+
+
 def test_inventory_failure_does_not_remove_published_sources(tmp_path):
     a = usb(tmp_path, 1)
     watch, _, backend, events = scenario(tmp_path, [(a,), (a,), OSError("synthetic inventory unavailable"), (a,)])
