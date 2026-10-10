@@ -10,7 +10,7 @@
 #endif
 #define ProductId "{574E3A6C-90F3-489F-A34F-C1D1A3E8609F}"
 #define ProductVersion "0.1.0.dev0"
-#define BuildNumber 2026100901
+#define BuildNumber 2026101001
 
 [Setup]
 AppId={{574E3A6C-90F3-489F-A34F-C1D1A3E8609F}
@@ -44,7 +44,7 @@ UsePreviousAppDir=yes
 UsePreviousTasks=yes
 Uninstallable=yes
 UninstallDisplayName=TRAKFROM-BX
-UninstallDisplayIcon={app}\runtime\pythonw.exe
+UninstallDisplayIcon={app}\TRAKFROM-BX.exe
 ChangesAssociations=no
 ChangesEnvironment=no
 AllowRootDirectory=no
@@ -60,12 +60,12 @@ Name: startup; Description: "Run TRAKFROM-BX when Windows starts (requires UAC)"
 #include PayloadInclude
 
 [Icons]
-Name: "{autodesktop}\TRAKFROM-BX"; Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I -B -m rekordbox_usb.public_launcher service"; WorkingDir: "{app}"; Tasks: desktop
-Name: "{group}\TRAKFROM-BX"; Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I -B -m rekordbox_usb.public_launcher service"; WorkingDir: "{app}"; Tasks: startmenu
-Name: "{group}\Uninstall TRAKFROM-BX"; Filename: "{uninstallexe}"; WorkingDir: "{app}"; Tasks: startmenu
+Name: "{autodesktop}\TRAKFROM-BX"; Filename: "{app}\TRAKFROM-BX.exe"; WorkingDir: "{app}"; Tasks: desktop
+Name: "{group}\TRAKFROM-BX"; Filename: "{app}\TRAKFROM-BX.exe"; WorkingDir: "{app}"; Tasks: startmenu
+Name: "{group}\Uninstall TRAKFROM-BX"; Filename: "{app}\Uninstall-TRAKFROM-BX.exe"; WorkingDir: "{app}"; Tasks: startmenu
 
 [Run]
-Filename: "{app}\runtime\pythonw.exe"; Parameters: "-I -B -m rekordbox_usb.public_launcher service"; WorkingDir: "{app}"; Description: "Launch TRAKFROM-BX"; Flags: postinstall nowait skipifsilent runasoriginaluser unchecked
+Filename: "{app}\TRAKFROM-BX.exe"; WorkingDir: "{app}"; Description: "Launch TRAKFROM-BX"; Flags: postinstall nowait skipifsilent runasoriginaluser unchecked
 
 [INI]
 Filename: "{app}\install-marker.ini"; Section: "installation"; Key: "product"; String: "TRAKFROM-BX"
@@ -191,12 +191,17 @@ begin
        (CompareText(ExtractFileExt(Uninstaller), '.exe') <> 0) or
        (Pos('unins', Lowercase(ExtractFileName(Uninstaller))) <> 1) then begin Result := False; exit; end;
   end;
-  Result := SafeLink(ExpandConstant('{autodesktop}\TRAKFROM-BX.lnk'),
-    ExpandConstant('{app}\runtime\pythonw.exe'), AppArguments) and
+  Result := (SafeLink(ExpandConstant('{autodesktop}\TRAKFROM-BX.lnk'),
+    ExpandConstant('{app}\TRAKFROM-BX.exe'), '') or
+    SafeLink(ExpandConstant('{autodesktop}\TRAKFROM-BX.lnk'),
+    ExpandConstant('{app}\runtime\pythonw.exe'), AppArguments)) and
+    (SafeLink(ExpandConstant('{group}\TRAKFROM-BX.lnk'),
+    ExpandConstant('{app}\TRAKFROM-BX.exe'), '') or
     SafeLink(ExpandConstant('{group}\TRAKFROM-BX.lnk'),
-    ExpandConstant('{app}\runtime\pythonw.exe'), AppArguments) and
-    SafeLink(ExpandConstant('{group}\Uninstall TRAKFROM-BX.lnk'),
-    Uninstaller, '');
+    ExpandConstant('{app}\runtime\pythonw.exe'), AppArguments)) and
+    (SafeLink(ExpandConstant('{group}\Uninstall TRAKFROM-BX.lnk'),
+    ExpandConstant('{app}\Uninstall-TRAKFROM-BX.exe'), '') or
+    SafeLink(ExpandConstant('{group}\Uninstall TRAKFROM-BX.lnk'), Uninstaller, ''));
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;

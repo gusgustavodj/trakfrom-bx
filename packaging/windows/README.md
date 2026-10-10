@@ -11,7 +11,10 @@ Build tools and test dependencies are never installed with the product.
    `build_installer.py` checks the fixed archive SHA-256 and exact runtime members.
 4. Run `build_installer.py --candidate <source> --wheel <wheel> --python-zip <zip>
    --licenses <license-directory> --stage <new-staging> --compiler <ISCC.exe>
-   --output <dist> --assemble-only` with absolute paths.
+   --native-compiler <cl.exe> --windows-sdk <Windows-Kits/10> --output <dist>
+   --assemble-only` with absolute paths. Existing MSVC and Windows SDK compile
+   the project's native_frontend.c into two x64 GUI entrypoints, with Windows
+   DLL imports only and no bundled CRT or .NET runtime.
 5. Test that staging using its private Python, with `-I -B`, before compiling.
    Keep pytest and synthetic fixtures in a separate test copy. Compare all app
    bytes against staging; never ship test tools or add them to production `_pth`.
@@ -35,3 +38,16 @@ Native uninstall preserves user catalogs, VHDXs and preferences. Upgrade keeps
 the installation identity and rejects downgrade, foreign paths and collisions.
 Close the application before maintenance. A previous PowerShell installation
 must be removed using its own uninstaller before switching to this Setup.
+
+The installed folder contains TRAKFROM-BX.exe and Uninstall-TRAKFROM-BX.exe.
+The first starts the bundled isolated Python launcher; the second invokes only
+this AppId's registered native uninstaller in the same verified install folder.
+Both require a matching installation marker and reject redirected paths.
+The uninstaller's files/log remain under Inno's control; they are not renamed.
+`/verify` is a read-only integrity check and never starts the app or uninstaller.
+
+TRAKFROM-BX can start while Traktor is already running. New sources can be
+published and existing attached catalogs reconciled through existing guards.
+An existing detached catalog that needs reuse/rewrite is deferred until the
+host closes; the service stays active and reports the pending catalogs.
+Unknown host state, source protection, ownership and cleanup remain fail-closed.

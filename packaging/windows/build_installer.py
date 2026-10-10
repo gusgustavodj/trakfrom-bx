@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import shutil
 import subprocess
@@ -20,7 +21,35 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def assemble(candidate, wheel, archive, licenses, stage):
+def compile_frontends(stage, compiler, sdk):
+    """Compile own GUI entrypoints against existing Windows SDK import libraries."""
+    source = Path(__file__).with_name("native_frontend.c")
+    versions = sorted(path.name for path in (sdk / "Include").iterdir()
+                      if (path / "um/windows.h").is_file())
+    assert versions and compiler.is_file() and source.is_file()
+    version = versions[-1]
+    include = sdk / "Include" / version
+    libraries = sdk / "Lib" / version / "um/x64"
+    tool_include = compiler.parents[3] / "include"
+    environment = os.environ.copy()
+    environment["PATH"] = os.pathsep.join((str(sdk / "bin" / version / "x64"),
+                                         str(compiler.parent), environment.get("PATH", "")))
+    for name, uninstall in (("TRAKFROM-BX.exe", 0), ("Uninstall-TRAKFROM-BX.exe", 1)):
+        subprocess.run([
+            str(compiler), "/nologo", "/O1", "/GS-", "/Zl", "/W4", "/WX",
+            "/DUNICODE", "/D_UNICODE", f"/DUNINSTALL_FRONTEND={uninstall}",
+            "/I" + str(include / "um"), "/I" + str(include / "shared"),
+            "/I" + str(include / "ucrt"), "/I" + str(tool_include),
+            "/Fo" + str(stage.parent / (stage.name + "-" + name + ".obj")), str(source),
+            "/link", "/NODEFAULTLIB", "/ENTRY:entry", "/SUBSYSTEM:WINDOWS", "/MACHINE:X64",
+            "/DYNAMICBASE", "/NXCOMPAT", "/HIGHENTROPYVA", "/MANIFEST:EMBED",
+            "/MANIFESTUAC:level='asInvoker' uiAccess='false'",
+            "/LIBPATH:" + str(libraries), "kernel32.lib", "user32.lib", "advapi32.lib", "shell32.lib",
+            "/OUT:" + str(stage / name),
+        ], check=True, env=environment, cwd=compiler.parent)
+
+
+def assemble(candidate, wheel, archive, licenses, stage, native_compiler, windows_sdk):
     assert not stage.exists(), "Use a new staging directory; never delete an old one"
     assert sha(archive) == PYTHON_SHA256
     allowed = set((candidate / "PUBLIC_FILES.txt").read_text(encoding="utf-8").splitlines())
@@ -56,6 +85,7 @@ def assemble(candidate, wheel, archive, licenses, stage):
         "SQLite is dedicated to the public domain: https://www.sqlite.org/copyright.html\n"
         "Inno Setup installer engine: copyright Jordan Russell and Martijn Laan; see licenses/INNO_LICENSE.txt.\n"
         "No third-party application runtime packages are installed.\n", encoding="utf-8")
+    compile_frontends(stage, native_compiler, windows_sdk)
     entries = {}
     for path in sorted(stage.rglob("*")):
         assert not path.is_symlink()
@@ -86,11 +116,13 @@ def compile_setup(stage, manifest, compiler, output):
 
 def main():
     parser = argparse.ArgumentParser()
-    for name in ("candidate", "wheel", "python-zip", "licenses", "stage", "compiler", "output"):
+    for name in ("candidate", "wheel", "python-zip", "licenses", "stage", "compiler", "output",
+                 "native-compiler", "windows-sdk"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--assemble-only", action="store_true")
     args = parser.parse_args()
-    manifest = assemble(args.candidate, args.wheel, args.python_zip, args.licenses, args.stage)
+    manifest = assemble(args.candidate, args.wheel, args.python_zip, args.licenses, args.stage,
+                        args.native_compiler, args.windows_sdk)
     (args.stage.parent / (args.stage.name + "-manifest.json")).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     if not args.assemble_only:
         return compile_setup(args.stage, manifest, args.compiler, args.output)
